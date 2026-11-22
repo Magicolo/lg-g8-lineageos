@@ -20,10 +20,11 @@ Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing Lin
 | [Test the device](docs/VALIDATION.md) | Hardware and radio test matrix, evidence from the development build, pending checks, and power testing |
 | [Maintain the port](docs/MAINTENANCE.md) | Updating the pinned source, rebasing changes, submitting patches and preparing releases |
 | [Understand release artifacts](docs/RELEASES.md) | What the binaries contain, how they were checked, and what a public OTA requires |
+| [Fix the Trust signing warning](docs/SIGNING.md) | Verify release keys and migrate an installed test-key build |
 | [Read the full ROM distribution audit](docs/RELEASE-AUDIT.md) | Signed candidate, license and notice evidence, and remaining release gates |
 
 See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for development artifacts and checksums. This preview has no public installable system image. Open issues against this repository with the exact build, model, firmware, a minimal reproduction and redacted diagnostics.
 
-Upstream source and licenses remain with the component repositories. The device and camera code preserves its existing Android licensing. The LG kernel retains its Linux kernel licensing. [LineageOS upstream](https://github.com/LineageOS/android/tree/lineage-24.0) · [LG community device tree](https://github.com/lge-qcom-dev/android_device_lge_alphaplus)
+Original material in this repository is licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for scope. Upstream components and redistributed artifacts retain their own licenses. [LineageOS upstream](https://github.com/LineageOS/android/tree/lineage-24.0) · [LG community device tree](https://github.com/lge-qcom-dev/android_device_lge_alphaplus)
 
 *Developed in collaboration with GPT 6.2 Sol.*

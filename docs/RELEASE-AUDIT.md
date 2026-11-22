@@ -1,6 +1,6 @@
 # Full ROM distribution audit
 
-**Decision for build 1795369605. The signed install kit passed offline checks. Public distribution of the complete kit is on hold.** The inspection found included proprietary components without an established redistribution basis, malformed license notice files, and a signing-family transition that has yet to be tested on hardware. The [v0.1.2 engineering release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v0.1.2-source-preview) contains the separately verified public development artifacts.
+**Decision for build 1795369605. The signed install kit passed offline checks. Public distribution of the complete kit is on hold.** The inspection found included proprietary components without an established redistribution basis and a signing-family transition that has yet to be tested on hardware. The first signed rehearsal also had malformed license notices. The subsequent signed candidate corrected their XML formatting. The [v0.1.2 engineering release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v0.1.2-source-preview) contains the separately verified public development artifacts.
 
 ## Exact candidate checked
 
@@ -33,11 +33,15 @@ GitHub requires publishers to establish the right to post content they did not c
 
 All three built partitions carry a compressed `etc/NOTICE.xml.gz`. Product passed strict XML parsing. System and vendor failed because their license text includes raw XML 1.0-invalid form-feed characters, 65 and 23 respectively. A diagnostic copy of each parsed after replacing form feeds with line breaks. No staged ROM image was changed by the check.
 
-Before publishing a full binary, regenerate parseable notices while retaining the actual copyright and license text, verify the corresponding source for each relevant copyleft component, and re-run the checks on the exact final target-files. An Android-generated notice file cannot establish a license for every vendor blob.
+A later candidate normalized the form feeds before signing and rebuilt the images. All three packaged notices parsed, both OTA signatures verified and VINTF passed. Its OTA SHA-256 is `b8b12479298fc8240d589f504e37fa488c512c82915d7f0167cfb5ceee68ce9f`. The earlier inventory and vendor rights findings still apply to the unchanged proprietary content. An Android-generated notice file cannot establish a license for every vendor blob.
 
 ```bash
 python3 tools/check-target-notices.py /path/to/signed-target-files.zip
 ```
+
+When the only issue is form feeds, use `--stage-normalized-to NEW_DIRECTORY` to prepare corrected entries without modifying the input ZIP. Replace the entries in a separate copy of the unsigned target-files, rebuild images through the signing tools, and check the final signed target-files. Preserve the applicable license text and source obligations.
+
+The [repository license](../LICENSE) and [NOTICE file](../NOTICE) cover original public project material. They do not change the distribution status of the OEM files in this audit.
 
 ## Finish the publication decision
 

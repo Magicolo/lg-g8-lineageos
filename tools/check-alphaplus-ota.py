@@ -4,9 +4,11 @@
 import argparse
 from contextlib import nullcontext
 import hashlib
+from io import BytesIO
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import ssl
 import struct
 import subprocess
 import sys
@@ -29,6 +31,7 @@ HEADER_MAGIC = {"boot": b"ANDROID!", "dtbo": bytes.fromhex("d7b7ab1e"), "vbmeta"
 SPARSE_MAGIC = 0xED26FF3A
 GAPPS_SHA256 = "a6844eeb2613541558237e467b20feb01f8b45b2ebab0109834140ea59b6ca4d"
 INSTALLER_MARGIN = 10240 * 1024
+AOSP_TEST_OTA_SHA256 = "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
 
 
 
@@ -66,7 +69,34 @@ def properties(archive, entry):
     )
 
 
-def check_metadata(ota, target):
+def system_build_properties(target):
+    try:
+        return properties(target, "SYSTEM/etc/build.prop")
+    except (KeyError, FileNotFoundError):
+        return properties(target, "SYSTEM/build.prop")
+
+
+def check_release_keys(target, build_props, certificate):
+    tags = build_props.get("ro.build.tags", "")
+    require("release-keys" in tags and "test-keys" not in tags,
+            f"Expected release-key build tags, found {tags!r}")
+    expected = ssl.PEM_cert_to_DER_cert(certificate.read_text(encoding="ascii"))
+    require(hashlib.sha256(expected).hexdigest() != AOSP_TEST_OTA_SHA256,
+            "The supplied OTA certificate is the public AOSP test certificate")
+    for location in ("SYSTEM/etc/security/otacerts.zip",
+                     "BOOT/RAMDISK/system/etc/security/otacerts.zip"):
+        with zipfile.ZipFile(BytesIO(target.read(location))) as store:
+            trusted = {
+                ssl.PEM_cert_to_DER_cert(store.read(name).decode("ascii"))
+                for name in store.namelist() if not name.endswith("/")
+            }
+        require(expected in trusted, f"Release OTA certificate missing from {location}")
+        require(all(hashlib.sha256(cert).hexdigest() != AOSP_TEST_OTA_SHA256 for cert in trusted),
+                f"Public AOSP test certificate remains trusted in {location}")
+    print("Release-key tags and Android/recovery OTA trust verified")
+
+
+def check_metadata(ota, target, build_props):
     ota_props = properties(ota, "META-INF/com/android/metadata")
     require(ota_props.get("ota-type") == "AB", "Expected a physical A/B OTA")
     require(ota_props.get("post-sdk-level") == "37", "Expected Android 17 SDK 37")
@@ -83,10 +113,6 @@ def check_metadata(ota, target):
     )
     product = set(target.read("META/ab_partitions.txt").decode("utf-8").split())
     require(product == EXPECTED_AB, f"Unexpected target-file A/B layout: {sorted(product)}")
-    try:
-        build_props = properties(target, "SYSTEM/etc/build.prop")
-    except (KeyError, FileNotFoundError):
-        build_props = properties(target, "SYSTEM/build.prop")
     fingerprint = build_props.get("ro.build.fingerprint") or build_props.get("ro.system.build.fingerprint")
     require(
         fingerprint and fingerprint in re.split(r"[|;]", ota_props.get("post-build", "")),
@@ -187,6 +213,8 @@ def main():
     parser.add_argument("--target-files", type=Path, required=True, help="target-files directory or ZIP")
     parser.add_argument("--gapps", type=Path, required=True, help="verified MindTheGapps 17 ARM64 ZIP")
     parser.add_argument("--ota-certificate", type=Path, required=True)
+    parser.add_argument("--require-release-keys", action="store_true",
+                        help="require release build tags and matching private-key OTA trust stores")
     parser.add_argument("--scratch-dir", type=Path, required=True, help="disk-backed existing directory")
     parser.add_argument("--simg2img", default="simg2img")
     parser.add_argument("--ota-verifier", default="check_ota_package_signature")
@@ -197,7 +225,10 @@ def main():
     else:
         target_context = zipfile.ZipFile(args.target_files)
     with zipfile.ZipFile(args.ota) as ota, target_context as target:
-        check_metadata(ota, target)
+        build_props = system_build_properties(target)
+        check_metadata(ota, target, build_props)
+        if args.require_release_keys:
+            check_release_keys(target, build_props, args.ota_certificate)
         check_image_headers(target)
         with zipfile.ZipFile(args.gapps) as gapps:
             require("system/product/apex/com.google.android.gmssystem.prodvic.apex" in gapps.namelist(),

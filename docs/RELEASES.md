@@ -30,6 +30,8 @@ The public source-preview assets cannot substitute for those files. The private,
 
 ## Qualify a future installable release
 
+See [the Trust signing guide](SIGNING.md) for release-key verification and the test-key migration requirements.
+
 1. Freeze the exact source manifest, target assumptions, kernel inputs and asset list. Establish redistribution rights for any included LG or Qualcomm APK, firmware, table, library or adaptation. Document extraction from owner-supplied stock inputs where appropriate. Provide the exact corresponding kernel source and build configuration with any distributed kernel image.
 2. Generate dedicated release keys and back them up securely. Keep private keys outside Git and its releases. Apply the release keys to APKs and any project-signed APEX containers and payloads, then sign the whole OTA and payload against the recovery and system trust chains. Preserve intentional, permitted presigned packages. Pin the public signing certificate fingerprint. Validate that the obsolete test key and a wrong release key are rejected.
 3. On one exact device, require Canadian target identity, SDK 37, increasing timestamp, matching A/B layout, image capacities, VINTF and both signatures. Use the [offline OTA preflight](../tools/check-alphaplus-ota.py) with the matching target-files and a verified ARM64 GApps ZIP when evaluating space. It checks partition sizes and add-on capacity. The default Android verifier checks the whole-package and A/B payload signatures. Run VINTF independently. Keep Google Apps separate.
