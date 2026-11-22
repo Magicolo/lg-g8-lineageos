@@ -17,7 +17,7 @@ The G8 product now requests `gralloc.qcom:64` in `device/lge/alphaplus/device.mk
 
 ## 2. Camera framework transport guard
 
-On the same failure, the framework read a failed HIDL return as a successful HAL status and cameraserver aborted. `HidlProviderInfo.cpp` now checks for a null camera interface and checks the HIDL return's transport status before unwrapping it. A missing or dead interface returns `DEAD_OBJECT`; another transport error returns `UNKNOWN_ERROR`. A successful transaction still maps the HAL status with the existing method.
+On the same failure, the framework read a failed HIDL return as a successful HAL status and cameraserver aborted. `HidlProviderInfo.cpp` now checks for a null camera interface and checks the HIDL return's transport status before unwrapping it. A missing or dead interface returns `DEAD_OBJECT`. Another transport error returns `UNKNOWN_ERROR`. A successful transaction still maps the HAL status with the existing method.
 
 This applies to any HIDL camera device on that torch path. Keep it independent from the hardware package change. Validate both the successful path and provider loss when submitting it upstream. AIDL providers use a different transport path.
 
