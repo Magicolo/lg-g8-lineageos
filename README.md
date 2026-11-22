@@ -24,4 +24,4 @@ See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for 
 
 Upstream source and licenses remain with the component repositories. The device and camera code preserves its existing Android licensing. The LG kernel retains its Linux kernel licensing. [LineageOS upstream](https://github.com/LineageOS/android/tree/lineage-24.0) · [LG community device tree](https://github.com/lge-qcom-dev/android_device_lge_alphaplus)
 
-*Co-developed by Magicolo and OpenAI Codex.*
+*Developed in collaboration with GPT 6.2 Sol.*
