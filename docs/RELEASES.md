@@ -16,6 +16,16 @@ The corresponding kernel source is [commit 8817f5e6c937](https://github.com/Magi
 
 The local test OTA was verified with the public AOSP test certificate and contains the private LG IMS adaptations. A build fingerprint inherited from 40b can include `release-keys` even when the actual OTA certificate is a test key. Inspect the actual signer and payload. The earlier release-signing rehearsal passed offline verification and old-key rejection, but the resulting build was not installed on a release-key device.
 
+## What a complete install kit contains
+
+A kit has one tested firmware and signing combination for the Canadian G8. It contains:
+
+- A full Canadian A/B OTA ZIP, its device and build metadata, the signing certificate fingerprint, and SHA-256 sums.
+- The matching Lineage Recovery boot image and any companion boot-chain images the validated stock-to-recovery procedure actually needs. Keep boot, the packaged DTBO and vbmeta paired from the same target-files. A normal sideload writes the OTA partitions and does not require separate raw flashing of those images.
+- The matching public source manifest, kernel configuration, known limitations, and complete installation and rollback instructions. The user obtains the required LG stock firmware and any optional Google Apps from their documented publishers. These are separate from the ROM package.
+
+The public source-preview assets cannot substitute for those files. The private, tested OTA contains modified LG IMS components and uses a published test key. Exact redistribution permission for the proprietary parts is unresolved. Offline re-signing alone cannot establish a safe stock-to-ROM install. See the [installation guide](INSTALL.md) and [troubleshooting](RECOVERY.md).
+
 ## Qualify a future installable release
 
 1. Freeze the exact source manifest, target assumptions, kernel inputs and asset list. Establish redistribution rights for any included LG or Qualcomm APK, firmware, table, library or adaptation. Document extraction from owner-supplied stock inputs where appropriate. Provide the exact corresponding kernel source and build configuration with any distributed kernel image.

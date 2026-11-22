@@ -4,12 +4,21 @@ An unofficial Android 17 port for the Canadian **LM-G820UM2** (`alphaplus`) with
 
 The public source covers the camera and flashlight, call microphone routing, kernel configuration, NFC driver selection and ARM64 page-table isolation. Our working VoLTE build also uses a separate LG IMS adaptation. The public manifest gives developers the open source baseline for that work. The [IMS engineering notes](docs/IMS.md) describe the implementation and its dependencies.
 
+## Installation and recovery
+
+Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing LineageOS, or same-key update path. It includes illustrated recovery menus, download verification and stop points. See [recovery troubleshooting](docs/RECOVERY.md) for common failures. The current public artifacts are an engineering preview. A complete, compatible install kit is required before flashing.
+
+## Project credits
+
+**Magicolo and OpenAI Codex co-developed this fork.** Magicolo directed the work, approved device changes and tested the physical handset, including real calls and audio. Codex helped research the port, write and review patches and documentation, automate builds and tests, and interpret diagnostics. The [validation record](docs/VALIDATION.md) distinguishes observations on hardware from conclusions drawn from source or offline checks. LineageOS, AOSP, the LG community trees, and their contributors supplied the upstream work.
+
 ## Developer documentation
 
 | Start here | What it contains |
 | --- | --- |
 | [Build the source preview](docs/BUILD.md) | Standard `repo` commands, inputs, exact target, kernel targets and common build failures |
 | [Understand the changes](docs/CHANGES.md) | Each public commit, root cause, implementation, and limits on reuse |
+| [Read the investigation history](docs/ATTEMPTS.md) | Failed approaches, evidence that ruled them out, and decisions that followed |
 | [Port LG IMS and VoLTE](docs/IMS.md) | Carrier selection, Android 17 ABI bridges, first-call fixes, and test requirements |
 | [Test the device](docs/VALIDATION.md) | Hardware and radio test matrix, evidence from the development build, pending checks, and power testing |
 | [Maintain the port](docs/MAINTENANCE.md) | Updating the pinned source, rebasing changes, submitting patches and preparing releases |

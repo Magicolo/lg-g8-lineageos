@@ -6,7 +6,7 @@ The project manifest pins 1,246 Git projects and four component forks. Use a ded
 
 Install Git, Git LFS, Android's `repo` launcher and the standard LineageOS build dependencies. Budget several hundred GiB for the checkout, object store and build output. Keep build output distinct from the source working trees. One Android 17 Soong graph pass exceeded 52 GiB of resident memory on the development host before swap was added. Lowering Ninja's job count can help later compilation but cannot cap every Soong process.
 
-Run the following in a new directory. To initialize from a release snapshot, use the full tag ref, for example `-b refs/tags/v0.1.1-source-preview`. A bare tag name is interpreted as a branch by `repo init`.
+Run the following in a new directory. To initialize from a release snapshot, use the full tag ref, for example `-b refs/tags/v0.1.2-source-preview`. A bare tag name is interpreted as a branch by `repo init`.
 
 ```bash
 repo init -u https://github.com/Magicolo/lg-g8-lineageos.git \
