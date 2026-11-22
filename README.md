@@ -8,10 +8,6 @@ The public source covers the camera and flashlight, call microphone routing, ker
 
 Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing LineageOS, or same-key update path. It includes illustrated recovery menus, download verification and stop points. See [recovery troubleshooting](docs/RECOVERY.md) for common failures. The current public artifacts are an engineering preview. A complete, compatible install kit is required before flashing.
 
-## Project credits
-
-**Magicolo and OpenAI Codex co-developed this fork.** Magicolo directed the work, approved device changes and tested the physical handset, including real calls and audio. Codex helped research the port, write and review patches and documentation, automate builds and tests, and interpret diagnostics. The [validation record](docs/VALIDATION.md) distinguishes observations on hardware from conclusions drawn from source or offline checks. LineageOS, AOSP, the LG community trees, and their contributors supplied the upstream work.
-
 ## Developer documentation
 
 | Start here | What it contains |
@@ -27,3 +23,5 @@ Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing Lin
 See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for development artifacts and checksums. This preview has no public installable system image. Open issues against this repository with the exact build, model, firmware, a minimal reproduction and redacted diagnostics.
 
 Upstream source and licenses remain with the component repositories. The device and camera code preserves its existing Android licensing. The LG kernel retains its Linux kernel licensing. [LineageOS upstream](https://github.com/LineageOS/android/tree/lineage-24.0) · [LG community device tree](https://github.com/lge-qcom-dev/android_device_lge_alphaplus)
+
+*Co-developed by Magicolo and OpenAI Codex.*
