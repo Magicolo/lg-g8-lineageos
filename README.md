@@ -1,9 +1,20 @@
-# LG G8 LineageOS 24.0 source preview
+# LineageOS 24.0 source preview for the LG G8 ThinQ
 
-This is an unofficial Android 17 source preview for the Canadian LG G8 ThinQ (LM-G820UM2, alphaplus) and stock 40b firmware. It publishes the source changes for the camera and flashlight, the call microphone route, NFC driver selection, and kernel page-table isolation. Other model, firmware and carrier combinations are outside the test scope.
+An unofficial Android 17 port for the Canadian **LM-G820UM2** (`alphaplus`) with LG Android 12 **40b** firmware. The repository pins the LineageOS, AOSP and LG dependencies and selects four public forks for the reviewed changes. Other G8 variants, firmware versions and carriers need their own validation.
 
-The manifest pins the LineageOS platform and LG device dependencies and selects four fork branches for the reviewed patches. The fork commits are listed in the Git history of each component. The manifest is a source reference. It has not been built from a fresh checkout.
+The public source covers the camera and flashlight, call microphone routing, kernel configuration, NFC driver selection and ARM64 page-table isolation. Our working VoLTE build also uses a separate LG IMS adaptation. The public manifest gives developers the open source baseline for that work. The [IMS engineering notes](docs/IMS.md) describe the implementation and its dependencies.
 
-The LG IMS port still depends on firmware-specific files and compatibility changes that require a separate redistribution review. Those changes, the Google Apps add-on, and installable ROM packages are excluded from this preview. The device test evidence from the full development build does not establish feature parity for this source preview.
+## Developer documentation
 
-Upstream source and licenses remain with the individual projects. New changes in the device and camera repos follow their existing Android source licensing. The LG kernel tree retains its Linux kernel licensing.
+| Start here | What it contains |
+| --- | --- |
+| [Build the source preview](docs/BUILD.md) | Standard `repo` commands, inputs, exact target, kernel targets and common build failures |
+| [Understand the changes](docs/CHANGES.md) | Each public commit, root cause, implementation, and limits on reuse |
+| [Port LG IMS and VoLTE](docs/IMS.md) | Carrier selection, Android 17 ABI bridges, first-call fixes, and test requirements |
+| [Test the device](docs/VALIDATION.md) | Hardware and radio test matrix, evidence from the development build, pending checks, and power testing |
+| [Maintain the port](docs/MAINTENANCE.md) | Updating the pinned source, rebasing changes, submitting patches and preparing releases |
+| [Understand release artifacts](docs/RELEASES.md) | What the binaries contain, how they were checked, and what a public OTA requires |
+
+See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for development artifacts and checksums. This preview has no public installable system image. Open issues against this repository with the exact build, model, firmware, a minimal reproduction and redacted diagnostics.
+
+Upstream source and licenses remain with the component repositories. The device and camera code preserves its existing Android licensing. The LG kernel retains its Linux kernel licensing. [LineageOS upstream](https://github.com/LineageOS/android/tree/lineage-24.0) · [LG community device tree](https://github.com/lge-qcom-dev/android_device_lge_alphaplus)
