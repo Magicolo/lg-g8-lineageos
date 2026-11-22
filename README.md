@@ -13,12 +13,14 @@ Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing Lin
 | Start here | What it contains |
 | --- | --- |
 | [Build the source preview](docs/BUILD.md) | Standard `repo` commands, inputs, exact target, kernel targets and common build failures |
+| [Check device and firmware compatibility](docs/COMPATIBILITY.md) | Exact 40b stock input, userspace provenance, BPF, A/B limits and Google Apps |
 | [Understand the changes](docs/CHANGES.md) | Each public commit, root cause, implementation, and limits on reuse |
 | [Read the investigation history](docs/ATTEMPTS.md) | Failed approaches, evidence that ruled them out, and decisions that followed |
 | [Port LG IMS and VoLTE](docs/IMS.md) | Carrier selection, Android 17 ABI bridges, first-call fixes, and test requirements |
 | [Test the device](docs/VALIDATION.md) | Hardware and radio test matrix, evidence from the development build, pending checks, and power testing |
 | [Maintain the port](docs/MAINTENANCE.md) | Updating the pinned source, rebasing changes, submitting patches and preparing releases |
 | [Understand release artifacts](docs/RELEASES.md) | What the binaries contain, how they were checked, and what a public OTA requires |
+| [Read the full ROM distribution audit](docs/RELEASE-AUDIT.md) | Signed candidate, license and notice evidence, and remaining release gates |
 
 See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for development artifacts and checksums. This preview has no public installable system image. Open issues against this repository with the exact build, model, firmware, a minimal reproduction and redacted diagnostics.
 

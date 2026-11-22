@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > The current public release contains development artifacts. It cannot install Android. Use this guide only when you have a complete install kit for the exact model, with its checksum list, verified signing certificate, and matching recovery. See [what a complete kit contains](RELEASES.md#what-a-complete-install-kit-contains).
 
-This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820UM40b** firmware, and Android device ID **alphaplus_lao_com**. The official LineageOS wiki groups several G8 models under `alphaplus`. The tests here apply to the named Canadian variant. Check the original model in stock Settings or on the device identification label. A generic `LM-G820` ADB response alone is insufficient. Cross-flashed or unidentified hardware needs a separate assessment. [LineageOS G8 variant page](https://lineageos.github.io/lineage_wiki/devices/alphaplus/variant1/)
+This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820UM40b** firmware, and Android device ID **alphaplus_lao_com**. The official LineageOS wiki groups several G8 models under `alphaplus`. The tests here apply to the named Canadian variant. Check the original model in stock Settings or on the device identification label. A generic `LM-G820` ADB response alone is insufficient. Cross-flashed or unidentified hardware needs a separate assessment. [LineageOS G8 variant page](https://lineageos.github.io/lineage_wiki/devices/alphaplus/variant1/) · [Firmware and partition reference](COMPATIBILITY.md)
 
 ## Choose your starting point
 

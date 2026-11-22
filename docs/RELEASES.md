@@ -18,6 +18,8 @@ The local test OTA was verified with the public AOSP test certificate and contai
 
 ## What a complete install kit contains
 
+For the exact signed candidate and the disposition of every asset group, see the [full ROM distribution audit](RELEASE-AUDIT.md).
+
 A kit has one tested firmware and signing combination for the Canadian G8. It contains:
 
 - A full Canadian A/B OTA ZIP, its device and build metadata, the signing certificate fingerprint, and SHA-256 sums.
