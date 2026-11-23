@@ -5,6 +5,10 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
@@ -30,12 +34,16 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class SmokeActivity extends Activity {
     private static final String TAG = "G8RomSmoke";
     private final Handler main = new Handler(Looper.getMainLooper());
     private MediaPlayer player;
+    private SensorManager sensorManager;
+    private SensorEventListener sensorListener;
 
     @Override
     public void onCreate(Bundle state) {
@@ -49,6 +57,9 @@ public final class SmokeActivity extends Activity {
             case "torch" -> torch();
             case "gps" -> gps();
             case "camera" -> camera(getIntent().getStringExtra("lens"));
+            case "cameraids" -> cameraIds();
+            case "cameraid" -> cameraById(getIntent().getStringExtra("id"));
+            case "sensors" -> sensors();
             case "pip" -> {
                 TextView label = new TextView(this);
                 label.setText("Picture-in-picture test");
@@ -178,6 +189,87 @@ public final class SmokeActivity extends Activity {
         } catch (Exception e) {
             Log.e(TAG, "FAIL mic", e);
         }
+    }
+
+    private void cameraIds() {
+        CameraManager manager = getSystemService(CameraManager.class);
+        try {
+            String[] ids = manager.getCameraIdList();
+            Log.i(TAG, "PASS cameraids " + String.join(",", ids));
+        } catch (Exception e) {
+            Log.e(TAG, "FAIL cameraids", e);
+        }
+    }
+
+    private void cameraById(String id) {
+        CameraManager manager = getSystemService(CameraManager.class);
+        try {
+            CameraCharacteristics camera = manager.getCameraCharacteristics(id);
+            if (!Integer.valueOf(CameraMetadata.INFO_DEVICE_TYPE_BUILT_IN)
+                    .equals(camera.get(CameraCharacteristics.INFO_DEVICE_TYPE))) {
+                Log.i(TAG, "SKIP camera ID " + id + " is not a built-in camera");
+                return;
+            }
+            captureFrame(manager, id, "ID " + id);
+        } catch (Exception e) {
+            Log.e(TAG, "FAIL camera ID " + id, e);
+        }
+    }
+
+    private void sensors() {
+        sensorManager = getSystemService(SensorManager.class);
+        Map<Integer, Integer> counts = new LinkedHashMap<>();
+        sensorListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (event.values.length == 0 || event.timestamp <= 0) {
+                    return;
+                }
+                for (float value : event.values) {
+                    if (!Float.isFinite(value)) {
+                        return;
+                    }
+                }
+                counts.computeIfPresent(event.sensor.getType(), (key, count) -> count + 1);
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            }
+        };
+
+        int[] types = {Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE,
+                Sensor.TYPE_MAGNETIC_FIELD, Sensor.TYPE_LIGHT, Sensor.TYPE_PROXIMITY,
+                Sensor.TYPE_PRESSURE};
+        for (int type : types) {
+            Sensor sensor = sensorManager.getDefaultSensor(type);
+            if (sensor == null) {
+                Log.i(TAG, "SKIP sensor type " + type + " is unavailable");
+            } else if (sensorManager.registerListener(
+                    sensorListener, sensor, SensorManager.SENSOR_DELAY_NORMAL, main)) {
+                counts.put(type, 0);
+            } else {
+                Log.e(TAG, "FAIL sensor " + sensor.getStringType() + " could not register");
+            }
+        }
+        main.postDelayed(() -> {
+            sensorManager.unregisterListener(sensorListener);
+            for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
+                Sensor sensor = sensorManager.getDefaultSensor(entry.getKey());
+                int count = entry.getValue();
+                Log.i(TAG, (count > 0 ? "PASS" : "INCONCLUSIVE") + " sensor "
+                        + sensor.getStringType() + " samples=" + count);
+            }
+            Log.i(TAG, "Sensors finished");
+        }, 5000L);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (sensorListener != null) {
+            sensorManager.unregisterListener(sensorListener);
+        }
+        super.onDestroy();
     }
 
     private void camera(String lens) {

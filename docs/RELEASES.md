@@ -16,6 +16,14 @@ The corresponding kernel source is [commit 8817f5e6c937](https://github.com/Magi
 
 The local test OTA was verified with the public AOSP test certificate and contains the private LG IMS adaptations. A build fingerprint inherited from 40b can include `release-keys` even when the actual OTA certificate is a test key. Inspect the actual signer and payload. The earlier release-signing rehearsal passed offline verification and old-key rejection. The normalized private release-key build was subsequently installed on the spare through its original Lineage Recovery. The installed OTA trust store matched the verified certificate. [Signing results](SIGNING.md)
 
+## Verified private-key OTA on the spare
+
+On November 23, 2026, the Canadian G8 on 40b accepted a local full OTA from release-key build `1795369605` to `1795454921` through Lineage Updater. The follow-up advanced the build timestamp with the same source revision set and project keys. Its SHA-256 was `07841df02e14788527b1cff978d1ec15c9fa531067f5d389d102f8c6f716582b`.
+
+The donor booted slot A. Updater authenticated the staged package, wrote slot B, verified the target filesystems, and finished postinstall before offering a reboot. The new build booted and marked slot B successful. The test file in shared storage and ADB authorization survived. The Play Store, Play Services, the active Google Services APEX and its add-on script remained available with file encryption and SELinux enforcing.
+
+Both images passed the embedded private platform certificate check. The 39 packaged APEX payload public keys matched across the builds, as did the sampled ART and runtime container certificates. The installed framework and LG IMS APK hashes matched the verified target-files. The Android OTA trust store was unchanged and Trust showed no public-keys warning. The test used a local file through the normal Updater. A hosted update feed and live carrier checks on the spare remain separate qualifications.
+
 ## What a complete install kit contains
 
 For the exact signed candidate and the disposition of every asset group, see the [full ROM distribution audit](RELEASE-AUDIT.md).

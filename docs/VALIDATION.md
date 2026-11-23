@@ -16,15 +16,15 @@ Use this matrix when touching the G8 hardware paths. Start with the exact device
 
 ## Second handset with private release keys
 
-The full private-key `1795369605` OTA installed through Lineage Recovery 21 on the second Canadian G8. Android 17 booted in slot A with file-based encryption, SELinux enforcing, Play Store and the separately installed Google Play Services APEX active. A normal restart passed the [Trust signing check](SIGNING.md#move-a-g8-from-test-keys-to-release-keys).
+The full private-key `1795369605` OTA installed through Lineage Recovery 21 on the second Canadian G8. Android 17 booted in slot A with file-based encryption, SELinux enforcing, Play Store and the separately installed Google Play Services APEX active. A normal restart passed the [Trust signing check](SIGNING.md#move-a-g8-from-test-keys-to-release-keys). The same-key update to `1795454921` passed the boot, signing, data persistence and Google Apps checks on slot B. [OTA evidence](RELEASES.md#verified-private-key-ota-on-the-spare)
 
 | Check | Result on the spare |
 | --- | --- |
-| Camera and LED | Front and rear Camera2 YUV captures returned matching built-in capture metadata. Torch on and off passed. |
+| Camera and LED | Both app-accessible Camera2 IDs returned built-in metadata and valid YUV frames. Torch on and off passed. The camera service enumerated five devices. The extra physical paths and video at other modes need separate coverage. |
 | Microphone and media | 96,000 microphone samples at 48 kHz with nonzero signal. Synthetic H.264 and HEVC playback, WebView JavaScript and canvas, and picture-in-picture passed. |
-| Storage and USB | A 64 MiB synthetic write over USB, sync and on-device SHA-256 readback matched. |
+| Storage and USB | A 64 MiB synthetic write over USB, sync and on-device SHA-256 readback matched. The UFS device reported pre-EOL `0x01` and both firmware wear estimates as `0x04`. The inspected boot log had no matching storage I/O or fatal UFS messages. These health descriptors and the spot test do not scan the entire flash medium. [Linux UFS health descriptors](https://docs.kernel.org/6.7/admin-guide/abi-testing.html) |
 | Wireless controllers | Wi-Fi reconnected and became a validated network. Bluetooth and NFC powered off and on. These checks do not exercise an accessory or tag. |
-| Location and other sensors | The GNSS engine called back without a location fix indoors. A fingerprint sensor and a vibrator were enumerated, and Android reported completion of a short vibration command. No fingerprint was enrolled. |
+| Location and other sensors | The GNSS engine called back without an indoor location fix. Accelerometer, gyroscope, magnetic field, light, proximity and pressure each supplied real sensor events. A fingerprint sensor and a vibrator were enumerated, and Android reported completion of a short vibration command. No fingerprint was enrolled. |
 | Physical fixtures | No SIM was present, so the spare's carrier attachment, IMS and call audio were not exercised. Fingerprint enrollment, proximity response, GNSS fix, NFC transactions, Bluetooth audio, wired audio, Qi, USB-C display and physical inspection require their respective fixtures or observation. |
 
 ## Repeatable acceptance matrix
@@ -54,11 +54,13 @@ adb logcat -d -s G8RomSmoke:I
 adb uninstall org.g8rom.smoke
 ```
 
-Substitute `web`, `mic`, `camera`, `gps`, `media` or `pip` for `torch`. Use `--es clip h264` or `--es clip hevc` with media. For camera use `--es lens rear` or `--es lens front`. If a requested runtime permission is denied, grant it on the device Settings page for that fixture before rerunning. Capture PIDs and relevant camera errors separately. Redact diagnostics before posting.
+Substitute `web`, `mic`, `camera`, `gps`, `media`, `pip` or `sensors` for `torch`. The sensor run logs event counts and leaves calibration to separate tests. Use `--es clip h264` or `--es clip hevc` with media. For camera use `--es lens rear` or `--es lens front`. Run `cameraids` to list app-accessible IDs, then `cameraid --es id <id>` to capture from one. If a requested runtime permission is denied, grant it on the device Settings page for that fixture before rerunning. Capture PIDs and relevant camera errors separately. Redact diagnostics before posting.
 
 ## Power and wake
 
 On the spare, Android reported the battery in good health and a gauge estimate near 3,494 mAh. During brief USB-powered diagnostics the battery was near 31°C and sampled CPU zones were in the mid-30s °C. A gauge figure does not establish usable battery capacity. Compare real charge-counter change during an unplugged interval, the recorded time on battery, and the temperature trend. Run with a consistent network, screen and charging state.
+
+In one 32 minute 50 second unplugged run on Wi-Fi with no SIM, the spare spent 30 minutes 52 seconds with its screen off. The battery cooled from 30.7°C to 26.3°C. Recorded on-battery samples reached a low of 25.3°C. Its display dropped from 72% to 71%, while the gauge counter decreased by 133 mAh. Android's separate battery estimate was about 105 mAh. The readings are insufficient to conclude that standby drain is low. Repeat a longer measurement before judging the battery or estimating runtime. The four little cores also entered C1 during this interval, despite the inherited boot flag. This complements the earlier USB-powered observation.
 
 The Linux kernel thermal zones and the LG/Qualcomm `thermal-engine` daemon were present, but `adb shell dumpsys thermalservice` reported `HAL Ready: false`. Android's status value of 0 therefore cannot verify the absence of throttling. Do not infer a defective sensor, a verified mitigation path, or the cause of the drain from this observation alone. The stock 40b vendor manifest declares a vendor-specific LG HIDL thermal interface. The pinned Qualcomm legacy Android AIDL implementation supports Snapdragon 855, but it can write trip points and its generic SKIN profile uses a different sensor from the LG skin estimate. A framework HAL change needs a separate mitigation and standby test. Qualify the mapping and event path against stock on the exact model before enabling a framework HAL. [Android thermal HAL](https://source.android.com/docs/core/power/thermal-mitigation)
 
