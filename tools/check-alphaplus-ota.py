@@ -32,6 +32,8 @@ SPARSE_MAGIC = 0xED26FF3A
 GAPPS_SHA256 = "a6844eeb2613541558237e467b20feb01f8b45b2ebab0109834140ea59b6ca4d"
 INSTALLER_MARGIN = 10240 * 1024
 AOSP_TEST_OTA_SHA256 = "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+AOSP_PLATFORM_SHA256 = "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+
 
 
 
@@ -162,7 +164,36 @@ def check_image_headers(target):
             print(f"{part}: valid header, {expanded:,} bytes")
 
 
-def check_space(target, gapps, partition, scratch, simg2img):
+def check_platform_signing(target, raw, scratch, certificate):
+    """Verify APKs read from the system image that will actually be flashed."""
+    expected = hashlib.sha256(ssl.PEM_cert_to_DER_cert(
+        certificate.read_text(encoding="ascii"))).hexdigest()
+    require(expected != AOSP_PLATFORM_SHA256, "The supplied platform certificate is the public AOSP platform certificate")
+    framework = "framework/framework-res.apk"
+    settings = "system_ext/priv-app/Settings/Settings.apk"
+    lineage_parts = "system_ext/priv-app/LineageParts/LineageParts.apk"
+    lg_ims = "system_ext/priv-app/AlphaplusLgIms/AlphaplusLgIms.apk"
+    apk_paths = [framework, settings, lineage_parts]
+    try:
+        target.getinfo("SYSTEM/" + lg_ims)
+    except (KeyError, FileNotFoundError):
+        pass
+    else:
+        apk_paths.append(lg_ims)
+
+    for path in apk_paths:
+        apk = scratch / PurePosixPath(path).name
+        subprocess.run(["debugfs", "-R", f'dump /system/{path} "{apk}"', raw],
+                       capture_output=True, check=True)
+        require(apk.is_file(), f"Could not extract {path} from the shipped system image")
+        result = subprocess.check_output(["apksigner", "verify", "--print-certs", apk], text=True)
+        signers = set(re.findall(r"certificate SHA-256 digest: ([a-f0-9]+)", result, re.I))
+        require(signers == {expected},
+                f"{path}: expected private platform certificate {expected}, found {sorted(signers)}")
+        print(f"Verified embedded platform signature: {path}")
+
+
+def check_space(target, gapps, partition, scratch, simg2img, platform_certificate=None):
     entry = f"IMAGES/{partition}.img"
     packed = scratch / f"{partition}.img"
     raw = scratch / f"{partition}.raw"
@@ -176,6 +207,9 @@ def check_space(target, gapps, partition, scratch, simg2img):
             packed.unlink()
         else:
             packed.rename(raw)
+
+        if partition == "system" and platform_certificate:
+            check_platform_signing(target, raw, scratch, platform_certificate)
 
         fs = subprocess.check_output(
             ["dumpe2fs", "-h", raw], env={"LC_ALL": "C", "PATH": "/usr/sbin:/usr/bin:/bin"},
@@ -213,12 +247,16 @@ def main():
     parser.add_argument("--target-files", type=Path, required=True, help="target-files directory or ZIP")
     parser.add_argument("--gapps", type=Path, required=True, help="verified MindTheGapps 17 ARM64 ZIP")
     parser.add_argument("--ota-certificate", type=Path, required=True)
+    parser.add_argument("--platform-certificate", type=Path,
+                        help="expected public half of the private system APK platform key")
     parser.add_argument("--require-release-keys", action="store_true",
-                        help="require release build tags and matching private-key OTA trust stores")
+                        help="verify release tags, OTA trust stores and embedded platform signatures")
     parser.add_argument("--scratch-dir", type=Path, required=True, help="disk-backed existing directory")
     parser.add_argument("--simg2img", default="simg2img")
     parser.add_argument("--ota-verifier", default="check_ota_package_signature")
     args = parser.parse_args()
+    if args.require_release_keys and not args.platform_certificate:
+        parser.error("--require-release-keys requires --platform-certificate")
     require(digest(args.gapps) == GAPPS_SHA256, "MindTheGapps ZIP differs from the verified package")
     if args.target_files.is_dir():
         target_context = nullcontext(DirectoryTarget(args.target_files))
@@ -234,7 +272,7 @@ def main():
             require("system/product/apex/com.google.android.gmssystem.prodvic.apex" in gapps.namelist(),
                     "Expected Google Play Services APEX missing")
             with tempfile.TemporaryDirectory(prefix="alphaplus-preflight-", dir=args.scratch_dir) as temp:
-                results = [check_space(target, gapps, partition, Path(temp), args.simg2img)
+                results = [check_space(target, gapps, partition, Path(temp), args.simg2img, args.platform_certificate)
                            for partition in ("product", "system")]
     sys.stdout.flush()
     subprocess.run([args.ota_verifier, args.ota_certificate, args.ota], check=True)

@@ -1,6 +1,6 @@
 # Full ROM distribution audit
 
-**Decision for build 1795369605. The signed install kit passed offline checks. Public distribution of the complete kit is on hold.** The inspection found included proprietary components without an established redistribution basis and a signing-family transition that has yet to be tested on hardware. The first signed rehearsal also had malformed license notices. The subsequent signed candidate corrected their XML formatting. The [v0.1.2 engineering release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v0.1.2-source-preview) contains the separately verified public development artifacts.
+**Decision for build 1795369605. The signed install kit passed offline checks. Public distribution of the complete kit is on hold.** The inspection found included proprietary components without an established redistribution basis. The normalized candidate subsequently completed a signing-family transition on a second Canadian G8. The first signed rehearsal also had malformed license notices. The subsequent signed candidate corrected their XML formatting. The [v0.1.2 engineering release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v0.1.2-source-preview) contains the separately verified public development artifacts.
 
 ## Exact candidate checked
 
@@ -11,7 +11,7 @@
 | Android signing | The complete ZIP and A/B payload verified with the private rehearsal certificate's public half. The public AOSP test certificate was rejected. The matching system and recovery trust stores contained the rehearsal certificate. |
 | Install-kit images | The exact SHA-256 and byte lengths of boot/recovery, packaged DTBO and vbmeta matched their records in the signed A/B payload. Offline VINTF and partition size checks passed. |
 | Optional Google Apps | The signed images had space for the verified MindTheGapps package. The archive did not contain the Play Store or Google Play Services APEX from that add-on. It does contain other inherited Google-branded vendor packages. |
-| Physical validation | The original test-key build worked on the development handset. A clean installation, first boot and rollback with the rehearsal keys and a subsequent same-key OTA still require a dedicated handset or approved test setup. |
+| Physical validation | The original test-key build worked on the development handset. The normalized release-key candidate booted on the spare after an existing-Lineage recovery install. Trust's Build signature alert was enabled and posted no public-keys warning on restart. Stock-to-custom and a post-install downgrade remain outside that test. [Signing results](SIGNING.md) |
 
 A new signer changes the recovery trust chain and can change app and APEX identities. Android cannot establish stock-to-custom boot compatibility solely from a certificate or a correctly signed OTA. Keep the [installation paths](INSTALL.md) and [rollback procedure](RECOVERY.md) paired with the final tested kit. [AOSP signing and recovery trust](https://source.android.com/docs/core/ota/sign_builds)
 

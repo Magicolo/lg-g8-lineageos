@@ -12,13 +12,26 @@ Use this matrix when touching the G8 hardware paths. Start with the exact device
 | `1795362667` | KPTI build booted and reported `Mitigation: PTI`. Retained file-based encryption, enforcing SELinux, Google Apps and NFC initialization. |
 | `1795365591` | The portable profile and compatibility JAR matched their expected outputs. carrier voicemail used IMS and returned to idle. The host parser passed exact-match, negative and malformed profile cases. |
 | `1795367652` | The Camera2 torch toggled on and off with stable camera service and HAL PIDs. The smoke fixture passed synthetic media playback, WebView, microphone and picture-in-picture checks. |
-| `1795369605` | Final development build booted and retained encryption, enforcing SELinux and NFC. The torch and outgoing IMS voicemail worked before the first credential unlock. The final pre-unlock check covered those two paths. The app-level flashlight and media evidence is from the preceding build with the same torch changes. |
+| `1795369605`, test keys | Final development build booted and retained encryption, enforcing SELinux and NFC. The torch and outgoing IMS voicemail worked before the first credential unlock. The final pre-unlock check covered those two paths. The app-level flashlight and media evidence is from the preceding build with the same torch changes. |
+
+## Second handset with private release keys
+
+The full private-key `1795369605` OTA installed through Lineage Recovery 21 on the second Canadian G8. Android 17 booted in slot A with file-based encryption, SELinux enforcing, Play Store and the separately installed Google Play Services APEX active. A normal restart passed the [Trust signing check](SIGNING.md#move-a-g8-from-test-keys-to-release-keys).
+
+| Check | Result on the spare |
+| --- | --- |
+| Camera and LED | Front and rear Camera2 YUV captures returned matching built-in capture metadata. Torch on and off passed. |
+| Microphone and media | 96,000 microphone samples at 48 kHz with nonzero signal. Synthetic H.264 and HEVC playback, WebView JavaScript and canvas, and picture-in-picture passed. |
+| Storage and USB | A 64 MiB synthetic write over USB, sync and on-device SHA-256 readback matched. |
+| Wireless controllers | Wi-Fi reconnected and became a validated network. Bluetooth and NFC powered off and on. These checks do not exercise an accessory or tag. |
+| Location and other sensors | The GNSS engine called back without a location fix indoors. A fingerprint sensor and a vibrator were enumerated, and Android reported completion of a short vibration command. No fingerprint was enrolled. |
+| Physical fixtures | No SIM was present, so the spare's carrier attachment, IMS and call audio were not exercised. Fingerprint enrollment, proximity response, GNSS fix, NFC transactions, Bluetooth audio, wired audio, Qi, USB-C display and physical inspection require their respective fixtures or observation. |
 
 ## Repeatable acceptance matrix
 
 | Area | Procedure and success condition | Open coverage |
 | --- | --- | --- |
-| Boot and OTA | Check exact target, signatures, A/B state, slot after reboot, encryption, SELinux, recovery and retained data. Test a clean install and an update of the same signing family. | Public clean build, production release-key install and hosted Updater. |
+| Boot and OTA | Check exact target, signatures, A/B state, slot after reboot, encryption, SELinux, recovery and retained data. Test a clean install and an update of the same signing family. | Public clean build, stock-to-custom path, and hosted Updater. |
 | IMS | Check exact carrier match, real modem VoPS, service binding, IMS registration and voice capability. Place and receive ordinary calls. Check first incoming after idle and retry after decline. | Fresh voice-profile initialization, extended idle, alternate carrier and real second model. |
 | Audio | Use a real far-end listener for earpiece, speakerphone, wired headset and Bluetooth HFP. Verify neither intelligibility nor echo regresses. Ordinary 48 kHz recording is a separate check. | Continuous far-end and accessory coverage including Quad DAC and USB audio. |
 | Camera and torch | Capture front and rear stills and YUV frames, exercise wide and ultra-wide lenses, record video with sound, toggle torch on/off, watch the provider and cameraserver PIDs, and validate HAL recovery. | Photo flash, controls from apps, additional video modes and a repeatable HIDL provider-failure test. |
@@ -45,6 +58,10 @@ Substitute `web`, `mic`, `camera`, `gps`, `media` or `pip` for `torch`. Use `--e
 
 ## Power and wake
 
+On the spare, Android reported the battery in good health and a gauge estimate near 3,494 mAh. During brief USB-powered diagnostics the battery was near 31°C and sampled CPU zones were in the mid-30s °C. A gauge figure does not establish usable battery capacity. Compare real charge-counter change during an unplugged interval, the recorded time on battery, and the temperature trend. Run with a consistent network, screen and charging state.
+
+The Linux kernel thermal zones and the LG/Qualcomm `thermal-engine` daemon were present, but `adb shell dumpsys thermalservice` reported `HAL Ready: false`. Android's status value of 0 therefore cannot verify the absence of throttling. Do not infer a defective sensor, a verified mitigation path, or the cause of the drain from this observation alone. The stock 40b vendor manifest declares a vendor-specific LG HIDL thermal interface. The pinned Qualcomm legacy Android AIDL implementation supports Snapdragon 855, but it can write trip points and its generic SKIN profile uses a different sensor from the LG skin estimate. A framework HAL change needs a separate mitigation and standby test. Qualify the mapping and event path against stock on the exact model before enabling a framework HAL. [Android thermal HAL](https://source.android.com/docs/core/power/thermal-mitigation)
+
 The CPU-idle boot flag experiment was reverted after it failed to improve the observed plugged-in little-core residency. To justify revisiting it, use repeated unplugged baselines with the same signal, SIM, initial charge, screen behavior, app load and test interval. Let indexing settle, disable USB Stay Awake for the measurement, and collect time on battery, screen time, charge-counter delta, temperature and CPU idle residency. Six hours is a useful initial comparison window. Do not simulate an unplugged measurement by changing BatteryService state.
 
-The [battery collector](../tools/Measure-G8Battery.ps1) accepts explicit ADB and a phase label. Compare results with a second run per build. Validate alarm wake, first incoming call after idle, notifications, Wi-Fi and Bluetooth resume and charging reconnect before accepting changes that affect wake behavior.
+The [battery collector](../tools/Measure-G8Battery.ps1) accepts explicit ADB, a phase label and an optional `-Serial` when more than one handset is connected. Compare results with a second run per build. Validate alarm wake, first incoming call after idle, notifications, Wi-Fi and Bluetooth resume and charging reconnect before accepting changes that affect wake behavior.

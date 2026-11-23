@@ -14,7 +14,7 @@ The source-preview release carries device-tree and configuration outputs taken f
 
 The corresponding kernel source is [commit 8817f5e6c937](https://github.com/Magicolo/android_kernel_lge_sm8150/tree/8817f5e6c9372e59e0c10a8dbe96517f64e927a8). The alpha fragment in the build matched that commit exactly. The [pinned manifest](../manifest.xml) also records the device makefiles, Android build rules, and Android Clang toolchain (`r596125`, project revision `29182889399818f97baa65ea238c80e8117981eb`). The [build guide](BUILD.md) lists the device-tree targets. These outputs do not carry firmware or modem calibration files. The raw blobs are not padded or AVB-wrapped Android partition images. Use them for source-to-binary inspection and comparisons.
 
-The local test OTA was verified with the public AOSP test certificate and contains the private LG IMS adaptations. A build fingerprint inherited from 40b can include `release-keys` even when the actual OTA certificate is a test key. Inspect the actual signer and payload. The earlier release-signing rehearsal passed offline verification and old-key rejection, but the resulting build was not installed on a release-key device.
+The local test OTA was verified with the public AOSP test certificate and contains the private LG IMS adaptations. A build fingerprint inherited from 40b can include `release-keys` even when the actual OTA certificate is a test key. Inspect the actual signer and payload. The earlier release-signing rehearsal passed offline verification and old-key rejection. The normalized private release-key build was subsequently installed on the spare through its original Lineage Recovery. The installed OTA trust store matched the verified certificate. [Signing results](SIGNING.md)
 
 ## What a complete install kit contains
 
@@ -26,7 +26,7 @@ A kit has one tested firmware and signing combination for the Canadian G8. It co
 - The matching Lineage Recovery boot image and any companion boot-chain images the validated stock-to-recovery procedure actually needs. Keep boot, the packaged DTBO and vbmeta paired from the same target-files. A normal sideload writes the OTA partitions and does not require separate raw flashing of those images.
 - The matching public source manifest, kernel configuration, known limitations, and complete installation and rollback instructions. The user obtains the required LG stock firmware and any optional Google Apps from their documented publishers. These are separate from the ROM package.
 
-The public source-preview assets cannot substitute for those files. The private, tested OTA contains modified LG IMS components and uses a published test key. Exact redistribution permission for the proprietary parts is unresolved. Offline re-signing alone cannot establish a safe stock-to-ROM install. See the [installation guide](INSTALL.md) and [troubleshooting](RECOVERY.md).
+The public source-preview assets cannot substitute for those files. Both the private test-key build and the private release-key build contain modified LG IMS components. Exact redistribution permission for the proprietary parts is unresolved. Offline re-signing alone cannot establish a safe stock-to-ROM install. See the [installation guide](INSTALL.md) and [troubleshooting](RECOVERY.md).
 
 ## Qualify a future installable release
 
