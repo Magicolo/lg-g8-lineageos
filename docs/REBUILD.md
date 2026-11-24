@@ -69,6 +69,8 @@ python3 "$guide/tools/prepare-local-ims.py" "$tree" "$inputs" --upgrade-compat
 python3 "$guide/tools/prepare-local-ims.py" "$tree" "$inputs" --upgrade-compat --verify-only
 ```
 
+If the manifest comparison fails because the repository has moved to a newer release, use the preserved [v1.1.0 guide and tools](https://github.com/Magicolo/lg-g8-lineageos/tree/6e65fe467dffd04eda7dab67f0cc5a7a65c2fff9). Run `git -C "$guide" switch --detach 6e65fe467dffd04eda7dab67f0cc5a7a65c2fff9` in the cloned guide checkout, then resume from the manifest comparison. The Android source remains pinned by the v1.1.0 tag. Download all assets from that tag's release.
+
 If the network failed, run the same `repo sync` command again inside `$tree` and keep the fetched objects. A failed LFS pull, a pointer in place of an APK, a missing pinned revision, or a failed IMS check needs to be fixed before compiling. See [Build troubleshooting](BUILD.md). The local manifest is required for the full build. The plain manifest is a preview without the local IMS integration.
 
 The IMS input check verifies the whole archive and the six relevant checkout revisions. It installs only the expected files, reuses matching tracked files, and applies the CarrierConfig upgrade patch. Keep the APK and the versioned Java and native bindings together. [IMS layout and ABI](IMS.md)
