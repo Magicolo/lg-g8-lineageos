@@ -1,9 +1,9 @@
-LG G8 LineageOS source preview
+LG G8 LineageOS source release
 Copyright 2026 the project contributors.
 
 The Apache License, Version 2.0 applies to original material contributed to
 this repository, unless a file states a different license. This includes the
-project's original documentation, recovery illustrations and development tools.
+project's original documentation, recovery illustrations and development tools and reviewed original IMS compatibility code.
 
 Referenced and incorporated third-party material retains its own licenses and
 notices. AOSP, LineageOS and LG community components are identified in the

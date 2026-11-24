@@ -1,7 +1,7 @@
 # Install LineageOS 24.0 on the Canadian LG G8
 
 > [!IMPORTANT]
-> The current public release contains development artifacts. It cannot install Android. Use this guide only when you have a complete install kit for the exact model, with its checksum list, verified signing certificate, and matching recovery. See [what a complete kit contains](RELEASES.md#what-a-complete-install-kit-contains).
+> The final public source release contains engineering artifacts. Installing Android requires the complete Canadian kit. Use this guide only when you have a complete install kit for the exact model, with its checksum list, verified signing certificate, and matching recovery. See [what a complete kit contains](RELEASES.md#what-a-complete-install-kit-contains).
 
 This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820UM40b** firmware, and Android device ID **alphaplus_lao_com**. The official LineageOS wiki groups several G8 models under `alphaplus`. The tests here apply to the named Canadian variant. Check the original model in stock Settings or on the device identification label. A generic `LM-G820` ADB response alone is insufficient. Cross-flashed or unidentified hardware needs a separate assessment. [LineageOS G8 variant page](https://lineageos.github.io/lineage_wiki/devices/alphaplus/variant1/) · [Firmware and partition reference](COMPATIBILITY.md)
 
@@ -14,6 +14,16 @@ This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820U
 | Official LineageOS, another unofficial fork, or a different signing key | [B. Start from another LineageOS build](#b-start-from-another-lineageos-build) | Use a clean install unless the kit explicitly documents a tested data-preserving migration for your starting build. |
 | This exact LineageOS 24 fork, same signing key | [C. Install an update from the same signing family](#c-install-an-update-from-the-same-signing-family) | Back up first. See the signing-family results in the [release qualification](RELEASES.md). |
 
+## Files to gather
+
+| File or download | When you need it |
+| --- | --- |
+| `lineage-alphaplus_lao_com-1795454921.zip`, `ota-release.x509.pem` and `SHA256SUMS` | A clean install or same-key update. Leave the OTA zipped. |
+| Matched recovery `boot.img` and any kit-specified companion images | Only when following the device-specific recovery setup. The complete OTA writes the required A/B partitions in the existing recovery path. |
+| Android Platform-Tools | Every USB installation. Use the official download linked below. |
+| Canadian stock 40b from the documented firmware source | Stock preparation and rollback. See [firmware compatibility](COMPATIBILITY.md). |
+| Android 17 ARM64 MindTheGapps | Optional. Install it in the updated recovery before the first Android boot. |
+
 ## Before touching partitions
 
 1. **Back up away from the handset.** Verify the copy opens. Save account recovery methods and app-specific encrypted backups. Confirm your Google account and second factors work on another device. A factory reset erases apps and internal shared storage, including Downloads. Remove portable SD media if you want it excluded and no step requires it.
@@ -22,7 +32,7 @@ This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820U
 4. **Verify the download.** Check the exact asset names and signed certificate fingerprint for the build. Keep the files together. On Linux, in the download directory, run `sha256sum -c SHA256SUMS`. On macOS use `shasum -a 256 -c SHA256SUMS`. In Windows run the following for each kit file and compare the resulting digest with its corresponding line. A checksum match verifies the bytes. The release's trusted signature still controls installation.
 
    ```powershell
-   Get-FileHash -Algorithm SHA256 -LiteralPath ".\lineage-alphaplus_lao_com.zip"
+   Get-FileHash -Algorithm SHA256 -LiteralPath ".\lineage-alphaplus_lao_com-1795454921.zip"
    ```
 
 5. **Check the device tool output before entering recovery.** Proceed when the expected handset appears as `device`. If it shows `unauthorized`, unlock the phone and approve USB debugging. An empty line means the computer cannot see a data connection. The slot and verified boot properties are useful observations. Confirm unlock state with the model-specific procedure if the properties are missing or unclear.
@@ -46,7 +56,7 @@ This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820U
 ## B. Start from another LineageOS build
 
 1. Verify 40b firmware on both slots using your installation records. A modern Android version in Settings does not identify the installed LG firmware.
-2. Check the kit's documented starting recovery and verify the ROM ZIP against the supplied, independently trusted release certificate and checksum. When available, run `check_ota_package_signature ota-release.x509.pem lineage-alphaplus_lao_com.zip` and compare the certificate fingerprint with the maintainer's independent record. The [offline verification tool](../tools/check-alphaplus-ota.py) also checks the payload. On the tested spare, the three newly signed boot-chain images staged alone on inactive A initially led to `OPID Mismatched`. The successful route used the complete OTA from the existing recovery. [Recovery notes](RECOVERY.md)
+2. Check the kit's documented starting recovery and verify the ROM ZIP against the supplied, independently trusted release certificate and checksum. When available, run `check_ota_package_signature ota-release.x509.pem lineage-alphaplus_lao_com-1795454921.zip` and compare the certificate fingerprint with the maintainer's independent record. The [offline verification tool](../tools/check-alphaplus-ota.py) also checks the payload. On the tested spare, the three newly signed boot-chain images staged alone on inactive A initially led to `OPID Mismatched`. The successful route used the complete OTA from the existing recovery. [Recovery notes](RECOVERY.md)
 3. Reboot into the known working Lineage Recovery with `adb reboot recovery` and follow [the clean sideload steps](#clean-install-in-lineage-recovery). The verified Canadian setup came from official LineageOS 21.0 on 40b. That recovery asks for explicit confirmation because the ROM uses this project's different release key. Proceed only with the known, independently verified kit on this documented migration path. Stop if a different model, unexpected signer, invalid checksum, unknown recovery, or any other verification error appears. [Upstream G8 upgrade guide](https://lineageos.github.io/lineage_wiki/devices/alphaplus/upgrade/variant1/)
 
 ## Clean install in Lineage Recovery
@@ -64,11 +74,11 @@ This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820U
 
    ```bash
    adb devices
-   adb sideload lineage-alphaplus_lao_com.zip
+   adb sideload lineage-alphaplus_lao_com-1795454921.zip
    ```
 
 4. Read the **phone** before deciding that the install succeeded. A host progress bar that stops near 47% can be normal when recovery is still verifying or installing. Continue only when recovery reports success. A different-signer confirmation is expected only in the documented path B transition after independent verification. If recovery reports a device assertion, unexpected signature error or failed install, stop. Save the exact error and return to [troubleshooting](RECOVERY.md). [LineageOS sideload guidance](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/#installing-lineageos-from-recovery)
-5. **If you want Google Apps**, use only the separately verified **Android 17 ARM64** add-on supported by the kit. Accept the ROM install prompt to reboot to recovery before add-ons, or use **Advanced → Reboot to recovery** if the kit directs you to do so. On the newly installed slot, choose **Apply update → Apply from ADB** again, then sideload the verified add-on ZIP. A separately signed add-on can show the known trust prompt. Compare its actual publisher and digest before continuing. Verify the add-on separately from the ROM. Path B documents the separate ROM signer-change case. Do not boot Android before completing this step. [Tested Android 17 ARM64 MindTheGapps release](https://github.com/MindTheGapps/17.0.0-arm64/releases/tag/MindTheGapps-17.0.0-arm64-20261022_132445)
+5. **If you want Google Apps**, use only the separately verified **Android 17 ARM64** add-on supported by the kit. Accept the ROM install prompt to reboot to recovery before add-ons, or use **Advanced → Reboot to recovery** if the kit directs you to do so. On the newly installed slot, choose **Apply update → Apply from ADB** again, then sideload the verified add-on ZIP. A separately signed add-on can show the known trust prompt. Compare its actual publisher and digest before continuing. Verify the add-on separately from the ROM. Path B documents the separate ROM signer-change case. Do not boot Android before completing this step. The tested add-on SHA-256 is `a6844eeb2613541558237e467b20feb01f8b45b2ebab0109834140ea59b6ca4d`. [Tested Android 17 ARM64 MindTheGapps release](https://github.com/MindTheGapps/17.0.0-arm64/releases/tag/MindTheGapps-17.0.0-arm64-20261022_132445)
 6. Select **Reboot system now**. Once Android reaches setup, verify the new build ID, slot, Wi-Fi and mobile data. Before restoring apps, place and receive ordinary calls and listen for echo. Check encryption, SELinux and any separately installed Google Apps. [First-boot validation](VALIDATION.md)
 
 ## C. Install an update from the same signing family

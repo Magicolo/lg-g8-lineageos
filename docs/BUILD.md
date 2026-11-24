@@ -21,7 +21,7 @@ All four fork entries pin the reviewed commit and specify its public branch as t
 
 - Confirm the checkout matches `manifest.xml`. The expected four component revisions are listed in [the change map](CHANGES.md).
 - The manifest references existing LG community device support and vendor projects. The compiled DTB and DTBO use the kernel source. A system build also needs the device's vendor blobs and the exact matching radio and boot firmware on the handset. Keep any independently obtained vendor inputs hash-pinned and verify redistribution terms before mirroring them.
-- The public preview omits the working LG IMS integration and its binary inputs. Read [the IMS guide](IMS.md) before attempting to reproduce the complete call-capable development build.
+- The default manifest omits local IMS integration. See the [IMS source and opt-in manifest](../ims/README.md) and the [IMS engineering guide](IMS.md) for the required local inputs.
 - Check that Git LFS materialized both ARM and ARM64 Chromium WebView APKs under `external/chromium-webview/prebuilt/`. If either starts with the Git LFS pointer header, fetch the LFS objects at the manifest revision. Verify each file's size and SHA-256 against its pointer object before retrying. A valid Git commit alone does not establish that a prebuilt exists.
 - The preview retains the selected platform's BPF compatibility changes and the matching SM8150 kernel backports. Keep them together when changing either side. A newer Android generic kernel does not automatically match the LG boot image, vendor HALs or firmware.
 

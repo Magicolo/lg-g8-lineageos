@@ -48,3 +48,13 @@ See [the Trust signing guide](SIGNING.md) for release-key verification and the t
 6. For an Updater channel, use the `lineage.updater.uri` product setting with a direct HTTPS v2 metadata endpoint. Match release type and SDK and advance the build timestamp. The metadata client rejects redirects. Verify the URL, OTA bytes and signature before switching the index. The [index generator](../tools/make-updater-index.py) verifies the signed package before writing version metadata. Test a real same-key A/B update from the published index and record the resulting slot and build on a device.
 
 [AOSP signing guide](https://source.android.com/docs/core/ota/sign_builds) · [LineageOS build signing](https://wiki.lineageos.org/signing_builds) · [Linux kernel licensing](https://docs.kernel.org/process/license-rules.html) · [LineageOS Updater](https://github.com/LineageOS/android_packages_apps_Updater/tree/lineage-24.0)
+
+## Final source release
+
+The final public release records the Canadian **1795454921** build. Its assets include the base DTB, raw DTBO table, effective kernel config, development test APK, public OTA certificate and IMS source archive. Verify them with the release's `SHA256SUMS`. The raw device trees match the corresponding contents of the signed build. They are for inspection and local development.
+
+The full signed kit was preserved privately with the OTA, matching recovery boot image, packaged DTBO, vbmeta and checksums. All three partition images matched the byte length and SHA-256 recorded in the signed A/B payload. The OTA SHA-256 is `07841df02e14788527b1cff978d1ec15c9fa531067f5d389d102f8c6f716582b`. Its public certificate fingerprint is `5A:50:4C:FC:FE:4C:23:F9:4E:E6:3C:04:B5:29:EA:73:29:81:C5:8E:ED:CB:86:74:BD:E1:8C:87:24:D8:19:44`.
+
+A Canadian G8 clean-installed this build from an existing Lineage Recovery, with the separate Android 17 ARM64 Google Apps add-on. Android booted with release keys and enforcing SELinux. Retained logs showed VoLTE, and call records showed connections in both directions. Trust showed no public-keys warning and NFC initialized. A second Canadian G8 passed the same-key local OTA from 1795369605.
+
+The full OTA includes LG and Qualcomm binaries and inherited proprietary vendor packages. The recovery boot image embeds board firmware. Wrapped DTBO and vbmeta carry build-host metadata. See the [distribution audit](RELEASE-AUDIT.md) and the [illustrated starting point](START-HERE.md).

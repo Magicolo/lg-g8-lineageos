@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <extend-project name="Magicolo/android_device_lge_alphaplus" path="device/lge/alphaplus"
+      revision="8365f1ed4381bad15e1f85029f80045c27a5ca1c"
+      upstream="refs/heads/g8-lineage-24.0-local-ims" />
+  <extend-project name="Magicolo/android_device_lge_sm8150-common" path="device/lge/sm8150-common"
+      revision="ced431293e3f1766a935e674b7cab20cbcbc62ee"
+      upstream="refs/heads/g8-lineage-24.0-local-ims" />
+</manifest>

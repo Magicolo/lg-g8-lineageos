@@ -44,3 +44,7 @@ The private upgrade kept CarrierConfig's version code at 3 for compatibility wit
 4. Test Wi-Fi calling, ePDG and emergency routing only with appropriate carrier provisioning and authorized facilities. Maintain a separate result for each capability. A second phone or hardware variant requires its own data and tests.
 
 [Related LG V60 IMS port](https://github.com/greatluke/lgv60-ims-volte-vowifi-lineageos) · [LineageOS device support requirements](https://github.com/LineageOS/charter/blob/main/device-support-requirements.md)
+
+## Final source and integration
+
+The [IMS source folder](../ims/README.md) contains the reviewed Java and native compatibility code, build templates and opt-in device manifest. The ordinary public manifest remains the default.

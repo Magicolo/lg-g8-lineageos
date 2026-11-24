@@ -1,0 +1,108 @@
+android_app_import {
+    name: "AlphaplusLgIms",
+    apk: "Ims6.apk",
+    certificate: "platform",
+    privileged: true,
+    system_ext_specific: true,
+    // LG's optional dex-only shared libraries are registered by permission XML.
+    // This branch's dex_import cannot supply a Soong uses-library context.
+    enforce_uses_libs: false,
+    dex_preopt: { enabled: false },
+    uses_libs: [
+        "qti-telephony-hidl-wrapper",
+        "qti-telephony-utils",
+    ],
+}
+
+android_app_import {
+    name: "AlphaplusLgDataService",
+    apk: "lgdataservice.apk",
+    certificate: "platform",
+    privileged: true,
+    system_ext_specific: true,
+    enforce_uses_libs: false,
+    dex_preopt: { enabled: false },
+}
+
+dex_import {
+    name: "product.lge.data.lgdataservice-manager",
+    jars: ["lgdataservice-manager.jar"],
+    stem: "lgdataservice-manager",
+    system_ext_specific: true,
+}
+
+dex_import {
+    name: "com.lge.ims.httpTxn",
+    jars: ["com.lge.ims.httpTxn.jar"],
+    system_ext_specific: true,
+}
+
+prebuilt_etc {
+    name: "alphaplus-lg-ims-httptxn-permissions",
+    src: "com.lge.ims.httpTxn.xml",
+    filename_from_src: true,
+    sub_dir: "permissions",
+    system_ext_specific: true,
+}
+
+prebuilt_etc {
+    name: "alphaplus-lg-data-manager-permissions",
+    src: "lgdataservice-manager.xml",
+    filename_from_src: true,
+    sub_dir: "permissions",
+    system_ext_specific: true,
+}
+
+prebuilt_etc {
+    name: "alphaplus-lg-ims-privapp-permissions",
+    src: "privapp-permissions-alphaplus-lg-ims.xml",
+    filename_from_src: true,
+    sub_dir: "permissions",
+    system_ext_specific: true,
+}
+
+cc_library_shared {
+    name: "libalphaplus_lgims_compat",
+    srcs: ["g8-lg-ims-compat.cpp"],
+    shared_libs: ["libgui", "libui", "libutils"],
+    compile_multilib: "64",
+    system_ext_specific: true,
+}
+
+
+java_library {
+    name: "alphaplus-lg-ims-framework-compat",
+    srcs: ["java/**/*.java", "java/**/*.aidl"],
+    aidl: { local_include_dirs: ["java"] },
+    installable: true,
+    system_ext_specific: true,
+}
+
+prebuilt_etc {
+    name: "alphaplus-lg-ims-framework-compat-permissions",
+    src: "lg-ims-framework-compat.xml",
+    filename_from_src: true,
+    sub_dir: "permissions",
+    system_ext_specific: true,
+}
+
+cc_prebuilt_binary {
+    name: "alphaplus_imsipsecstarter",
+    stem: "imsipsecstarter",
+    srcs: ["ipsec/imsipsecstarter"],
+    compile_multilib: "64",
+    strip: { none: true },
+    shared_libs: ["libcutils", "liblog", "libc++"],
+    init_rc: ["ipsec/init.g8.ims-ipsec.rc"],
+    system_ext_specific: true,
+}
+
+cc_prebuilt_binary {
+    name: "alphaplus_imsipsecclient",
+    stem: "imsipsecclient",
+    srcs: ["ipsec/imsipsecclient"],
+    compile_multilib: "64",
+    strip: { none: true },
+    shared_libs: ["libcutils", "liblog", "libc++"],
+    system_ext_specific: true,
+}
