@@ -1,20 +1,16 @@
-# Release artifacts and OTA qualification
+# Release downloads and verification
 
-## Source preview and build outputs
+The [v1.1.0 release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) contains the complete kit for build **1795533156**. The [beginner guide](INSTALL.md) is the starting point for installing or updating. The exact variant is the Canadian **LM-G820UM2** (`alphaplus_lao_com`) with LG firmware **G820UM40b**. The ROM uses Android 17 SDK 37 and the **2026-11-01** framework security patch.
 
-The source-preview release carries device-tree and configuration outputs taken from the completed Canadian development build `1795369605`. It also includes the rebuilt diagnostic app. They are inspection and development inputs. There is no full recovery image or installable Android system in this release.
-
-| Asset | Provenance and use |
+| Task | Files from v1.1.0 |
 | --- | --- |
-| `alphaplus-1795369605-base-dtb.bin` | The base device-tree blob extracted from the verified build's `boot.img`. It matches the build's generated `dtb.img` byte for byte. |
-| `alphaplus-1795369605-raw-dtbo.bin` | The raw 14-entry overlay table from the kernel build. It matches the embedded payload of the private `dtbo.img` before the AVB footer and partition padding. |
-| `alphaplus-1795369605-kernel.config` | Effective configuration extracted from the booted build's kernel image. It matches all three build directories' effective kernel, DTB and DTBO configs byte for byte. |
-| `compatibility-smoke.apk` | The development test fixture, rebuilt from the included source with its own disposable app certificate. It runs synthetic Android API checks and is separate from the OS. |
-| `SHA256SUMS` | Validate the downloaded assets with `sha256sum -c SHA256SUMS`. |
+| Update from this fork's release-key build | ROM ZIP and `SHA256SUMS`. The full OTA is one ZIP. |
+| Clean install from working Lineage Recovery | ROM ZIP and `SHA256SUMS`. Add Google Apps if wanted. For USB on Windows, use the `platform-tools` folder inside `LG-G8-Windows-tools.zip`. |
+| Restore matching stock firmware | Three `.kdz.partNN` files, `split-files.json`, and the Windows tools. See [recovery troubleshooting](RECOVERY.md). |
+| Recover the boot chain | Matched `boot.img`, `dtbo.img` and `vbmeta.img` as required by the recovery procedure. |
+| Rebuild or inspect | IMS input archive, three `signed-target-files.zip.partNN` files, effective kernel configuration, testing APK and public signing certificates. The [rebuild guide](REBUILD.md) covers the pinned source and tooling. |
 
-The corresponding kernel source is [commit 8817f5e6c937](https://github.com/Magicolo/android_kernel_lge_sm8150/tree/8817f5e6c9372e59e0c10a8dbe96517f64e927a8). The alpha fragment in the build matched that commit exactly. The [pinned manifest](../manifest.xml) also records the device makefiles, Android build rules, and Android Clang toolchain (`r596125`, project revision `29182889399818f97baa65ea238c80e8117981eb`). The [build guide](BUILD.md) lists the device-tree targets. These outputs do not carry firmware or modem calibration files. The raw blobs are not padded or AVB-wrapped Android partition images. Use them for source-to-binary inspection and comparisons.
-
-The local test OTA was verified with the public AOSP test certificate and contains the private LG IMS adaptations. A build fingerprint inherited from 40b can include `release-keys` even when the actual OTA certificate is a test key. Inspect the actual signer and payload. The earlier release-signing rehearsal passed offline verification and old-key rejection. The normalized private release-key build was subsequently installed on the spare through its original Lineage Recovery. The installed OTA trust store matched the verified certificate. [Signing results](SIGNING.md)
+The release's whole-package and A/B payload signatures verified. The boot-chain image digests matched the signed payload. The rebuilt package uses the same signing family as the earlier device-tested build. See [validation](VALIDATION.md#v110-release-validation) and [signing](SIGNING.md).
 
 ## Verified private-key OTA on the spare
 
@@ -26,43 +22,25 @@ Both images passed the embedded private platform certificate check. The 39 packa
 
 ## What a complete install kit contains
 
-For the exact signed candidate and the disposition of every asset group, see the [full ROM distribution audit](RELEASE-AUDIT.md).
+The table above lists the installation and recovery files. For developer-only checks and the matching source, see [Rebuild](REBUILD.md).
 
-A kit has one tested firmware and signing combination for the Canadian G8. It contains:
+## Reassemble a split download
 
-- A full Canadian A/B OTA ZIP, its device and build metadata, the signing certificate fingerprint, and SHA-256 sums.
-- The matching Lineage Recovery boot image and any companion boot-chain images the validated stock-to-recovery procedure actually needs. Keep boot, the packaged DTBO and vbmeta paired from the same target-files. A normal sideload writes the OTA partitions and does not require separate raw flashing of those images.
-- The matching public source manifest, kernel configuration, known limitations, and complete installation and rollback instructions. The user obtains the required LG stock firmware and any optional Google Apps from their documented publishers. These are separate from the ROM package.
+Only the stock `G820UM40b_00_OPEN_CA_OP_1129.kdz` and developer `signed-target-files.zip` are split. The ROM downloads as one ZIP.
 
-The public source-preview assets cannot substitute for those files. Both the private test-key build and the private release-key build contain modified LG IMS components. Exact redistribution permission for the proprietary parts is unresolved. Offline re-signing alone cannot establish a safe stock-to-ROM install. See the [installation guide](INSTALL.md) and [troubleshooting](RECOVERY.md).
+1. Download the three matching `.partNN` files and `split-files.json` from this release. Put them together in a folder with room for the complete file.
+2. **On Windows**, also download `Join-ReleaseParts.ps1`. In PowerShell in that folder, run the appropriate line below. The helper checks each part and the completed file's SHA-256. If Windows blocks the downloaded helper, compare its hash with `SHA256SUMS` before unblocking that specific file.
+3. **On macOS or Linux**, check the part hashes in `SHA256SUMS`. Concatenate the three parts in order into a new file and compare its SHA-256 with the value in `split-files.json`.
+
+```powershell
+.\Join-ReleaseParts.ps1 -File G820UM40b_00_OPEN_CA_OP_1129.kdz
+.\Join-ReleaseParts.ps1 -File signed-target-files.zip
+```
 
 ## Qualify a future installable release
 
-See [the Trust signing guide](SIGNING.md) for release-key verification and the test-key migration requirements.
+Build against the pinned sources, verify images and signatures, then test a clean installation and a same-key OTA on the exact device. For preparation and checks, use [Rebuild](REBUILD.md) and [Validation](VALIDATION.md).
 
-1. Freeze the exact source manifest, target assumptions, kernel inputs and asset list. Establish redistribution rights for any included LG or Qualcomm APK, firmware, table, library or adaptation. Document extraction from owner-supplied stock inputs where appropriate. Provide the exact corresponding kernel source and build configuration with any distributed kernel image.
-2. Generate dedicated release keys and back them up securely. Keep private keys outside Git and its releases. Apply the release keys to APKs and any project-signed APEX containers and payloads, then sign the whole OTA and payload against the recovery and system trust chains. Preserve intentional, permitted presigned packages. Pin the public signing certificate fingerprint. Validate that the obsolete test key and a wrong release key are rejected.
-3. On one exact device, require Canadian target identity, SDK 37, increasing timestamp, matching A/B layout, image capacities, VINTF and both signatures. Use the [offline OTA preflight](../tools/check-alphaplus-ota.py) with the matching target-files and a verified ARM64 GApps ZIP when evaluating space. It checks partition sizes and add-on capacity. The default Android verifier checks the whole-package and A/B payload signatures. Run VINTF independently. Keep Google Apps separate.
-4. Verify clean installation and recovery. On the tested G8, Lineage Recovery runs from the appropriate A/B boot image. For a major clean install using verified images, back up data and account recovery first. Verify the required firmware, format data once when the migration requires it, apply the device-specific OTA and reboot to the new slot's recovery before installing any compatible add-on as directed. Recovery's final status is authoritative if host sideload progress stalls around 47%. Test only the model and image matching the intended release.
-5. Verify upgrade and rollback on the actual release signing family. The old test-key Updater cannot normally validate a release-key OTA. Changing platform, APK and APEX identities can also affect app data and encryption keys. Use a clean install as the tested migration baseline until a specific migration path passes. Test incoming and outgoing voice, encryption, recovery, update state and add-on persistence on the new signing family.
-6. For an Updater channel, use the `lineage.updater.uri` product setting with a direct HTTPS v2 metadata endpoint. Match release type and SDK and advance the build timestamp. The metadata client rejects redirects. Verify the URL, OTA bytes and signature before switching the index. The [index generator](../tools/make-updater-index.py) verifies the signed package before writing version metadata. Test a real same-key A/B update from the published index and record the resulting slot and build on a device.
+## Extract inspection files from the archived build
 
-[AOSP signing guide](https://source.android.com/docs/core/ota/sign_builds) · [LineageOS build signing](https://wiki.lineageos.org/signing_builds) · [Linux kernel licensing](https://docs.kernel.org/process/license-rules.html) · [LineageOS Updater](https://github.com/LineageOS/android_packages_apps_Updater/tree/lineage-24.0)
-
-## Final source release
-
-The final public release records the Canadian **1795454921** build. Its assets include the base DTB, raw DTBO table, effective kernel config, development test APK, public OTA certificate and IMS source archive. Verify them with the release's `SHA256SUMS`. The raw device trees match the corresponding contents of the signed build. They are for inspection and local development.
-
-The full signed kit was preserved privately with the OTA, matching recovery boot image, packaged DTBO, vbmeta and checksums. All three partition images matched the byte length and SHA-256 recorded in the signed A/B payload. The OTA SHA-256 is `07841df02e14788527b1cff978d1ec15c9fa531067f5d389d102f8c6f716582b`. Its public certificate fingerprint is `5A:50:4C:FC:FE:4C:23:F9:4E:E6:3C:04:B5:29:EA:73:29:81:C5:8E:ED:CB:86:74:BD:E1:8C:87:24:D8:19:44`.
-
-A Canadian G8 clean-installed this build from an existing Lineage Recovery, with the separate Android 17 ARM64 Google Apps add-on. Android booted with release keys and enforcing SELinux. Retained logs showed VoLTE, and call records showed connections in both directions. Trust showed no public-keys warning and NFC initialized. A second Canadian G8 passed the same-key local OTA from 1795369605.
-
-The full OTA includes LG and Qualcomm binaries and inherited proprietary vendor packages. The recovery boot image embeds board firmware. Wrapped DTBO and vbmeta carry build-host metadata. See the [distribution audit](RELEASE-AUDIT.md) and the [illustrated starting point](START-HERE.md).
-
-## Complete install kit v1.1.0
-
-[GitHub release v1.1.0](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) contains the complete Canadian kit for build **1795533156**, including the signed OTA, matching recovery/DTBO/vbmeta, stock 40b, Windows USB tools, optional Google Apps, exact IMS build inputs and signed target-files. The latter two are useful to maintainers. Every provided file and split part has a SHA-256 entry.
-
-The public rebuild uses neutral Android and kernel build identities. The IMS Java bridge and the four call sites in the matching LG APK use carrier-neutral ABI names. The numeric profile, match rules and telephony behavior are unchanged. Conventional upstream stock packages retain their manufacturer data. The released ROM keeps the same project OTA, platform, APEX and AVB signing family as the previously tested build **1795454921**.
-
-Follow the [installation guide](INSTALL.md) for recovery and same-key update paths. The earlier build passed a clean install and ordinary incoming and outgoing calls on hardware. Review the validation information in the release notes for the rebuilt package.
+Use GitHub's source archive for the [v1.1.0 tag](https://github.com/Magicolo/lg-g8-lineageos/tree/v1.1.0). The signed target-files archive contains the exact base DTB at `BOOT/dtb`. Use `avbtool erase_footer` on a **copy** of `dtbo.img` to retrieve its raw overlay table.

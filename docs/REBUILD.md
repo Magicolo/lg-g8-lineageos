@@ -1,6 +1,6 @@
 # Rebuild or recover a complete Canadian LG G8 kit
 
-The GitHub tag pins the source projects and their revisions. The v1.1.0 release supplies the signed install kit and the exact IMS input archive so maintainers can continue after deleting the old build directories. Keep them on a drive outside either workspace. A new build uses a new timestamp; the released OTA is the byte-for-byte copy of build 1795533156.
+The GitHub tag pins the source projects and their revisions. The [v1.1.0 release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) supplies the signed OTA, exact IMS input archive, recovery files and signed target-files. Keep them on a drive outside either workspace. A new build uses a new timestamp; the released OTA is the byte-for-byte copy of build 1795533156.
 
 ## What to save before deleting a build tree
 
@@ -46,7 +46,7 @@ The Java bridge and the matching APK use the same carrier-neutral ABI names. Use
 
 ## Check an existing install kit
 
-From the kit directory on Linux run `sha256sum -c SHA256SUMS`. On Windows compare `Get-FileHash -Algorithm SHA256` with the matching line. Verify the OTA with the pinned public certificate and the AOSP `check_ota_package_signature` from your build tools. A successful check covers the whole ZIP and its A/B payload.
+From the installation downloads directory on Linux run `sha256sum -c SHA256SUMS --ignore-missing`. On Windows compare `Get-FileHash -Algorithm SHA256` with the matching line. Verify the OTA with the pinned public certificate and the AOSP `check_ota_package_signature` from your build tools. A successful check covers the whole ZIP and its A/B payload.
 
 To re-export the exact boot-chain images into an empty directory, use the signed target-files archive that belongs with the OTA.
 

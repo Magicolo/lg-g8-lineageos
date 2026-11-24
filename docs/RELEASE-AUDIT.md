@@ -1,6 +1,6 @@
 # Full ROM distribution audit
 
-**Decision for build 1795369605. The signed install kit passed offline checks. Public distribution of the complete kit is on hold.** The inspection found included proprietary components without an established redistribution basis. The normalized candidate subsequently completed a signing-family transition on a second Canadian G8. The first signed rehearsal also had malformed license notices. The subsequent signed candidate corrected their XML formatting. The [v0.1.2 engineering release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v0.1.2-source-preview) contains the separately verified public development artifacts.
+**Decision for build 1795369605. The signed install kit passed offline checks. Public distribution of that candidate was held.** The inspection found included proprietary components without an established redistribution basis. The normalized candidate subsequently completed a signing-family transition on a second Canadian G8. The first signed rehearsal also had malformed license notices. The subsequent signed candidate corrected their XML formatting. The [current release documentation](RELEASES.md) records the outcome of that qualification.
 
 ## Exact candidate checked
 

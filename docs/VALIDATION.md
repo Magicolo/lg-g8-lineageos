@@ -68,6 +68,6 @@ The CPU-idle boot flag experiment was reverted after it failed to improve the ob
 
 The [battery collector](../tools/Measure-G8Battery.ps1) accepts explicit ADB, a phase label and an optional `-Serial` when more than one handset is connected. Compare results with a second run per build. Validate alarm wake, first incoming call after idle, notifications, Wi-Fi and Bluetooth resume and charging reconnect before accepting changes that affect wake behavior.
 
-## v1.1.0 release candidate
+## v1.1.0 release validation
 
-The release candidate replaces the build account, host and project-specific IMS names. Verify the full OTA and A/B payload signatures, VINTF, stock target and certificates, effective kernel identity, and matching boot-chain hashes. A new validation run on a Canadian G8 remains separate from the earlier hardware results for build 1795454921.
+Build `1795533156` passed full OTA and A/B payload signature verification, VINTF, embedded platform signatures, stock target and partition size checks, and the optional Google Apps sizing check. The effective kernel identity uses generic labels. Boot, DTBO and vbmeta matched the signed payload bytes. The previous build `1795454921` was tested on a Canadian G8. The rebuilt package was verified offline.

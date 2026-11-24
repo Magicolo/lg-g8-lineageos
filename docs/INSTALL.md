@@ -1,94 +1,147 @@
-# Install LineageOS 24.0 on the Canadian LG G8
+# Install or update LineageOS 24.0 on the Canadian LG G8
 
-> [!IMPORTANT]
-> Download the complete [v1.1.0 Canadian kit](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0). Use this guide only when you have a complete install kit for the exact model, with its checksum list, verified signing certificate, and matching recovery. See [what a complete kit contains](RELEASES.md#what-a-complete-install-kit-contains).
+**Before downloading, check the phone.** This guide is for the Canadian **LG G8 ThinQ LM-G820UM2** with Canadian LG Android 12 **G820UM40b** firmware. On stock Android, check the model and software version in **Settings → About phone**. If the phone already runs a custom ROM, use your stock installation records to confirm 40b. A generic `LG G8` or `LM-G820` label alone is insufficient. If you cannot confirm the exact variant, firmware, or unlocked bootloader, pause before flashing. [Firmware and model details](COMPATIBILITY.md)
 
-This guide covers the Canadian **LG G8 ThinQ LM-G820UM2**, LG Android 12 **G820UM40b** firmware, and Android device ID **alphaplus_lao_com**. The official LineageOS wiki groups several G8 models under `alphaplus`. The tests here apply to the named Canadian variant. Check the original model in stock Settings or on the device identification label. A generic `LM-G820` ADB response alone is insufficient. Cross-flashed or unidentified hardware needs a separate assessment. [LineageOS G8 variant page](https://lineageos.github.io/lineage_wiki/devices/alphaplus/variant1/) · [Firmware and partition reference](COMPATIBILITY.md)
+## 1. Pick the row that matches your phone
 
-## Choose your starting point
-
-| What your G8 has now | Start here | User data |
-| --- | --- | --- |
-| LG stock Android, locked bootloader | [A. Start from LG stock Android](#a-start-from-lg-stock-android) | Backup required. Bootloader preparation and a clean install may wipe internal storage. |
-| LG stock Android, already unlocked | [A. Start from LG stock Android](#a-start-from-lg-stock-android) | Clean install wipes internal storage. |
-| Official LineageOS, another unofficial fork, or a different signing key | [B. Start from another LineageOS build](#b-start-from-another-lineageos-build) | Use a clean install unless the kit explicitly documents a tested data-preserving migration for your starting build. |
-| This exact LineageOS 24 fork, same signing key | [C. Install an update from the same signing family](#c-install-an-update-from-the-same-signing-family) | Back up first. See the signing-family results in the [release qualification](RELEASES.md). |
-
-## Files to gather
-
-| File or download | When you need it |
+| What is on the phone now? | What to do |
 | --- | --- |
-| `lineage-alphaplus_lao_com-1795533156.zip`, `ota-release.x509.pem` and `SHA256SUMS` | A clean install or same-key update. Leave the OTA zipped. |
-| Matched recovery `boot.img` and any kit-specified companion images | Only when following the device-specific recovery setup. The complete OTA writes the required A/B partitions in the existing recovery path. |
-| Android Platform-Tools | Every USB installation. Use the official download linked below. |
-| Canadian stock 40b from the release | Stock preparation and rollback. See [firmware compatibility](COMPATIBILITY.md). |
-| Android 17 ARM64 MindTheGapps | Optional. Install it in the updated recovery before the first Android boot. |
+| This fork, release-key build **1795454921** | [Use the local update option](#c-install-an-update-from-the-same-signing-family). This route is designed to keep your apps and data. |
+| This fork, build **1795533156** | You already have the build on this page. |
+| Another LineageOS build on 40b with working Lineage Recovery | [Prepare for a clean install](#b-start-from-another-lineageos-build). Formatting erases apps and internal storage. |
+| Stock LG Android | [Read the stock prerequisites first](#a-start-from-lg-stock-android). A locked or unidentified G8 needs device-specific preparation. |
 
-## Before touching partitions
+**Back up before either route.** Copy photos, Downloads, chat backups, and account recovery information off the phone. Check that you can open your backup and sign in again. A clean install erases internal storage. If coming from stock, remove the Google account on the phone after your backup and recovery checks to avoid Factory Reset Protection.
 
-1. **Back up away from the handset.** Verify the copy opens. Save account recovery methods and app-specific encrypted backups. Confirm your Google account and second factors work on another device. A factory reset erases apps and internal shared storage, including Downloads. Remove portable SD media if you want it excluded and no step requires it.
-2. **Identify the firmware and rollback kit.** The tested radio stack requires the Canadian 40b firmware. The ROM ZIP does not replace the entire LG firmware. Keep a verified path back to 40b and your prior recovery and system build. If the phone never booted the intended stock firmware, verify the radio and hardware from stock first. Never write another handset's EFS, modem calibration or personal partitions.
-3. **Prepare USB.** Charge the phone, use a reliable data cable and a direct USB port, and download Android Platform-Tools. Enable Developer options and USB debugging on the working system, connect it, unlock it and accept the computer's debugging prompt. On Windows open PowerShell in the extracted `platform-tools` folder and substitute `.\adb.exe` for `adb` in all examples. [Google Platform-Tools](https://developer.android.com/tools/releases/platform-tools)
-4. **Verify the download.** Check the exact asset names and signed certificate fingerprint for the build. Keep the files together. On Linux, in the download directory, run `sha256sum -c SHA256SUMS`. On macOS use `shasum -a 256 -c SHA256SUMS`. In Windows run the following for each kit file and compare the resulting digest with its corresponding line. A checksum match verifies the bytes. The release's trusted signature still controls installation.
+## 2. Download and verify the files
 
-   ```powershell
-   Get-FileHash -Algorithm SHA256 -LiteralPath ".\lineage-alphaplus_lao_com-1795533156.zip"
-   ```
+| Download | When |
+| --- | --- |
+| [ROM ZIP](https://github.com/Magicolo/lg-g8-lineageos/releases/download/v1.1.0/lineage-alphaplus_lao_com-1795533156.zip) | Required. This is a single ZIP. Leave it zipped. |
+| [SHA256SUMS](https://github.com/Magicolo/lg-g8-lineageos/releases/download/v1.1.0/SHA256SUMS) | Required to check the download. |
+| [Google Apps ZIP](https://github.com/Magicolo/lg-g8-lineageos/releases/download/v1.1.0/MindTheGapps-17.0.0-arm64-20261022_132445.zip) | Optional for a **clean install** if you want the Play Store and Google services. Leave it zipped. |
+| [Windows tools](https://github.com/Magicolo/lg-g8-lineageos/releases/download/v1.1.0/LG-G8-Windows-tools.zip) | Download if you will install using Windows and USB. Open `platform-tools` inside the extracted folder. |
 
-5. **Check the device tool output before entering recovery.** Proceed when the expected handset appears as `device`. If it shows `unauthorized`, unlock the phone and approve USB debugging. An empty line means the computer cannot see a data connection. The slot and verified boot properties are useful observations. Confirm unlock state with the model-specific procedure if the properties are missing or unclear.
+For a USB install from macOS or Linux, download [Google's Platform-Tools](https://developer.android.com/tools/releases/platform-tools) for your operating system.
 
-   ```bash
-   adb devices
-   adb shell getprop ro.product.device
-   adb shell getprop ro.boot.slot_suffix
-   adb shell getprop ro.boot.flash.locked
-   adb shell getprop ro.boot.verifiedbootstate
-   ```
+The ROM ZIP is the only file sent to Updater. A normal install from working Lineage Recovery on 40b uses the ROM ZIP and, if wanted, the Google Apps ZIP. Stock firmware, recovery images and rebuild tools are also on this release page. Use those for the advanced paths below.
 
-## A. Start from LG stock Android
+**Check the SHA-256 before proceeding.** In File Explorer on Windows, open the folder containing your downloads. Click the address bar, type `powershell`, and press Enter. Copy and run the first line. Run the second line only if you downloaded Google Apps.
 
-1. **Establish the baseline.** Boot Canadian stock 40b and confirm the model, firmware, SIM, data, camera and USB behavior. Fix hardware and firmware mismatches before using a custom ROM. Remove Google accounts from the handset before the clean reset if appropriate, with the backup and access checks complete.
-2. **Unlock before installing recovery.** The LineageOS G8 wiki states there is no official LG unlock method for this variant. It begins from an already unlocked phone. The project did not qualify a fresh unlock on a second stock handset. If yours is locked or the status is uncertain, stop here until you have a verified, exact-variant unlock and rollback route. The official generic Android fastboot procedure alone does not establish support for this G8. [G8 bootloader prerequisite](https://lineageos.github.io/lineage_wiki/devices/alphaplus/variant1/) · [Android Verified Boot states](https://source.android.com/docs/security/features/verifiedboot/device-state)
-3. **Install the kit's matching recovery.** This model uses recovery in the boot image. The model-specific LineageOS wiki documents its `dd` installation from an environment that already has root and the appropriate partition links. Follow its recovery section only if your environment meets those prerequisites and the kit authorizes that exact recovery image. Ordinary stock ADB shell lacks permission to write those partitions. If the recovery route is unclear, leave the working system intact and verify it before proceeding. [G8 recovery installation](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/#installing-a-custom-recovery-using-dd)
-4. **Verify both slots' firmware.** Follow the model-specific firmware copy section if setting up A/B firmware for the first time. That section supplies its own signed package and conditions. The tested upgrade began with 40b already prepared for both slots. Copying from the wrong or uncertain active slot can spread the wrong firmware. Leave the stock backups and bootloader state intact. [G8 firmware slot instructions](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/#ensuring-all-firmware-partitions-are-consistent)
-5. When the recovery title and kit's certificate are confirmed, follow [the clean sideload steps](#clean-install-in-lineage-recovery).
+```powershell
+Get-FileHash -Algorithm SHA256 .\lineage-alphaplus_lao_com-1795533156.zip
+Get-FileHash -Algorithm SHA256 .\MindTheGapps-17.0.0-arm64-20261022_132445.zip
+```
 
-## B. Start from another LineageOS build
+On macOS or Linux, open Terminal in the download folder and use `shasum -a 256 FILENAME`. On Linux, `sha256sum FILENAME` also works. Replace `FILENAME` with the name of the ZIP. Open `SHA256SUMS` in a text editor such as Notepad. The entire hash must match the line for that filename. Uppercase and lowercase letters are equivalent. If a hash differs, download the file again before using it.
 
-1. Verify 40b firmware on both slots using your installation records. A modern Android version in Settings does not identify the installed LG firmware.
-2. Check the kit's documented starting recovery and verify the ROM ZIP against the supplied, independently trusted release certificate and checksum. When available, run `check_ota_package_signature ota-release.x509.pem lineage-alphaplus_lao_com-1795533156.zip` and compare the certificate fingerprint with the maintainer's independent record. The [offline verification tool](../tools/check-alphaplus-ota.py) also checks the payload. On the tested spare, the three newly signed boot-chain images staged alone on inactive A initially led to `OPID Mismatched`. The successful route used the complete OTA from the existing recovery. [Recovery notes](RECOVERY.md)
-3. Reboot into the known working Lineage Recovery with `adb reboot recovery` and follow [the clean sideload steps](#clean-install-in-lineage-recovery). The verified Canadian setup came from official LineageOS 21.0 on 40b. That recovery asks for explicit confirmation because the ROM uses this project's different release key. Proceed only with the known, independently verified kit on this documented migration path. Stop if a different model, unexpected signer, invalid checksum, unknown recovery, or any other verification error appears. [Upstream G8 upgrade guide](https://lineageos.github.io/lineage_wiki/devices/alphaplus/upgrade/variant1/)
+The guide pins the exact signed ROM and the optional add-on checked for this build. Compare these values before accepting an expected signer-change prompt.
 
-## Clean install in Lineage Recovery
-
-![Illustrated Lineage Recovery main menu and factory reset submenu](images/recovery-reset.png)
-
-*Illustration of the menu choices. The font, placement and navigation can differ on your recovery.*
-
-1. Confirm the phone says **Lineage Recovery** and the kit matches it. Verify the external backup one last time. Select **Factory reset**, then **Format data/factory reset**, and confirm the wipe. Wait for recovery to explicitly report completion. Return to the main menu once. The physical stock LG factory-reset screen is a different screen.
-2. Select **Apply update**, then **Apply from ADB**. On the host, `adb devices` should now show the device in `sideload` state.
-
-   ![Illustrated Lineage Recovery Apply update and Apply from ADB menu choices](images/recovery-sideload.png)
-
-3. From the folder containing the verified ROM ZIP, run the command below with the actual release filename. Leave the cable connected and wait for recovery to finish.
-
-   ```bash
-   adb devices
-   adb sideload lineage-alphaplus_lao_com-1795533156.zip
-   ```
-
-4. Read the **phone** before deciding that the install succeeded. A host progress bar that stops near 47% can be normal when recovery is still verifying or installing. Continue only when recovery reports success. A different-signer confirmation is expected only in the documented path B transition after independent verification. If recovery reports a device assertion, unexpected signature error or failed install, stop. Save the exact error and return to [troubleshooting](RECOVERY.md). [LineageOS sideload guidance](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/#installing-lineageos-from-recovery)
-5. **If you want Google Apps**, use only the separately verified **Android 17 ARM64** add-on supported by the kit. Accept the ROM install prompt to reboot to recovery before add-ons, or use **Advanced → Reboot to recovery** if the kit directs you to do so. On the newly installed slot, choose **Apply update → Apply from ADB** again, then sideload the verified add-on ZIP. A separately signed add-on can show the known trust prompt. Compare its actual publisher and digest before continuing. Verify the add-on separately from the ROM. Path B documents the separate ROM signer-change case. Do not boot Android before completing this step. The tested add-on SHA-256 is `a6844eeb2613541558237e467b20feb01f8b45b2ebab0109834140ea59b6ca4d`. [Tested Android 17 ARM64 MindTheGapps release](https://github.com/MindTheGapps/17.0.0-arm64/releases/tag/MindTheGapps-17.0.0-arm64-20261022_132445)
-6. Select **Reboot system now**. Once Android reaches setup, verify the new build ID, slot, Wi-Fi and mobile data. Before restoring apps, place and receive ordinary calls and listen for echo. Check encryption, SELinux and any separately installed Google Apps. [First-boot validation](VALIDATION.md)
+| Download | Expected SHA-256 |
+| --- | --- |
+| ROM | `f87fee1e21bc3680feb2f85cb64f9e3242f7d810a19cef969d5cccab1e0989cd` |
+| Google Apps | `a6844eeb2613541558237e467b20feb01f8b45b2ebab0109834140ea59b6ca4d` |
 
 ## C. Install an update from the same signing family
 
-1. Confirm the current and new releases use the same project OTA certificate, exact device and update branch. A different signing family belongs in [path B](#b-start-from-another-lineageos-build).
-2. Copy the verified update ZIP to internal shared storage. Open **Settings → System → Updater** and select the local update option if provided by the build. Choose the ZIP and wait until Updater explicitly asks for a reboot. Leave the working slot and user data intact.
-3. Reboot from Updater. Confirm the new incremental ID and expected slot. Recheck encryption, SELinux, both directions of calls, storage contents and the installed add-on state. See the [release qualification](RELEASES.md) for the signatures and Google Apps combinations tested.
+**Use this for confirmed release-key build 1795454921 of this fork.** The update uses the same project keys. Other ROMs and older test-key versions use the clean-install route.
 
-[Recovery and troubleshooting](RECOVERY.md) · [Release requirements and kit contents](RELEASES.md) · [Tester matrix](VALIDATION.md)
+1. **On the computer**, verify the ROM ZIP as described above. Plug in the phone, choose **File transfer** from the USB notification, and copy the verified ZIP to the phone's **Download** folder. Keep the ZIP intact.
+2. **On the phone**, open **Settings → System → Updater**. Tap **⋮ → Install local update** and choose the ROM ZIP from **Download**.
+3. When Updater reports **Update imported**, tap the imported build and select **Install**. Keep the phone charged. Wait until Updater offers **Reboot**, then tap it.
+4. After reboot, check **Settings → About phone → Android version**. Verify your apps, Wi-Fi, mobile data and ordinary incoming and outgoing calls before clearing your backup. This build keeps the same release key as the earlier device-tested update. [Validation details](VALIDATION.md)
 
-## Reassemble large downloads
+If Updater rejects the package or the signing family is uncertain, keep your data and read [troubleshooting](RECOVERY.md).
 
-GitHub limits the size of each release asset. The stock KDZ and signed target-files archive come as consecutively numbered parts. Keep all the parts of the file you need in one directory. Run the release's `Join-ReleaseParts.ps1` in PowerShell, or verify both the part hashes and resulting whole-file hash manually. The ROM OTA is a single ZIP and is not joined. Signed target-files and the IMS input archive are rebuild inputs and are not needed for a normal OTA installation.
+## B. Start from another LineageOS build
+
+You need an unlocked Canadian G8 on 40b with **working Lineage Recovery**. The checked migration started from LineageOS 21 on 40b. It used a clean install. Before formatting, compare the ROM ZIP to the hash pinned above. That gives you the exact package whose project signatures were verified. An [independent certificate check](#verify-the-rom-signer-when-changing-builds) is also available.
+
+### Set up USB and reboot into recovery
+
+1. **On the computer**, extract the tools ZIP you downloaded. Open the extracted `platform-tools` folder and confirm you can see `adb.exe` on Windows or `adb` on macOS/Linux. Move the verified ROM ZIP and optional Google Apps ZIP beside it.
+2. **On the phone**, enable **Developer options** by tapping **Build number** seven times in **Settings → About phone**. Enable **USB debugging** in **Settings → System → Developer options**. Plug in the unlocked phone with a USB data cable. Tap **Allow** if the phone asks to allow USB debugging.
+3. **On the computer**, open PowerShell in the `platform-tools` folder using its address bar. Run the two lines below **one at a time**. Run the second line only when the first lists one device with status `device`. If it shows `unauthorized`, unlock the phone and approve the prompt. If it shows nothing, try another data cable or USB port before continuing. [More USB troubleshooting](RECOVERY.md)
+
+   ```powershell
+   .\adb.exe devices
+   .\adb.exe reboot recovery
+   ```
+
+   On macOS or Linux, open Terminal in the same folder and enter the commands below instead.
+
+   ```bash
+   ./adb devices
+   ./adb reboot recovery
+   ```
+
+4. **On the phone**, wait until the screen says **Lineage Recovery**. A stock LG reset screen or **OPID Mismatched** calls for [recovery troubleshooting](RECOVERY.md).
+
+## Clean install in Lineage Recovery
+
+### 1. Format the phone
+
+**On the phone**, check your external backup one more time. This step erases apps and internal storage. In **Lineage Recovery**, select **Factory reset → Format data/factory reset → Format data**. Wait for the format to succeed. Go back to the main menu. If touch controls do not work, use **Volume** to move and **Power** to select.
+
+![Illustrated Lineage Recovery main menu and the format data confirmation](images/recovery-reset.png)
+
+### 2. Send the ROM from the computer
+
+**On the phone**, select **Apply update → Apply from ADB**. Leave this screen open.
+
+![Illustrated Lineage Recovery update menu and waiting for ADB](images/recovery-sideload.png)
+
+**On the computer**, in the same `platform-tools` terminal, run the first line. The phone must appear as `sideload`. Then run the second line.
+
+```powershell
+.\adb.exe devices
+.\adb.exe sideload lineage-alphaplus_lao_com-1795533156.zip
+```
+
+On macOS/Linux, use the same commands with `./adb` in place of `.\adb.exe`.
+
+**Read the result on the phone.** Computer progress can stop near **47%** while recovery is still working. Keep the cable connected and let recovery finish. The phone's success message is the signal to move on. If an older recovery asks for explicit permission to install a package signed by this project's different key, choose **Install anyway** only on the documented migration from LineageOS 21, with this guide's exact ROM hash confirmed and no additional recovery error. For a wrong-device, unexpected signer, or failed install error, stop at the recovery screen. [Troubleshooting](RECOVERY.md)
+
+### 3. Decide whether to install Google Apps
+
+- **Without Google Apps**, select **Reboot system now** after recovery reports success.
+- **With Google Apps**, stay in recovery. Accept the prompt to **reboot to recovery** to install add-ons. If the prompt is absent, select **Advanced → Reboot to recovery**. In the newly booted recovery, select **Apply update → Apply from ADB** again. Run the command below from the computer. Only the separately verified add-on may show its expected different-signer prompt. Wait for success on the phone before selecting **Reboot system now**.
+
+  ```powershell
+  .\adb.exe sideload MindTheGapps-17.0.0-arm64-20261022_132445.zip
+  ```
+
+  On macOS/Linux use `./adb`. Finish the add-on step **before the first Android boot**.
+
+### 4. Check the first boot
+
+First boot can take several minutes. Once the welcome screen appears, complete Android setup. In **Settings → About phone → Android version**, look for **Android 17** and **LineageOS 24.0**. Connect to Wi-Fi, check mobile data and place and receive ordinary calls before restoring apps. Keep your backup until everything works. An earlier build in the same signing family was tested on a phone. This exact build passed offline signing and compatibility checks. [Validation details](VALIDATION.md)
+
+## A. Start from LG stock Android
+
+Stock preparation is an advanced path. The [support downloads](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) include matching stock 40b, Windows tools and `boot.img` for the exact build.
+
+1. Boot the matching Canadian 40b stock firmware at least once. Confirm the model, SIM, calls, data, camera and USB. Preserve a model-specific rollback route.
+2. If the bootloader is locked or you cannot establish its state, stop here. A fresh unlock from locked stock was not validated. The [upstream G8 guide](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/) documents recovery prerequisites for an already prepared phone.
+3. Use the release's matching `boot.img` only if you meet the upstream rooted-recovery prerequisites and have a verified device-specific recovery procedure. Use the [model-specific A/B firmware instructions](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/#ensuring-all-firmware-partitions-are-consistent) when preparing both slots. If any stock tool or recovery step fails, pause and use [Troubleshooting](RECOVERY.md).
+4. Once your exact model, 40b firmware, and working Lineage Recovery are confirmed, follow [the clean install](#clean-install-in-lineage-recovery). With working recovery, the full OTA writes the necessary partitions.
+
+## Verify the ROM signer when changing builds
+
+Download **ota-release.x509.pem** and **ota-verifier-linux-x86_64.tar.gz** from the [same release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0). Keep them and the ROM in one folder. Compare the certificate's SHA-256 fingerprint with this value.
+
+```text
+5A:50:4C:FC:FE:4C:23:F9:4E:E6:3C:04:B5:29:EA:73:29:81:C5:8E:ED:CB:86:74:BD:E1:8C:87:24:D8:19:44
+```
+
+In x86-64 Linux or Ubuntu under Windows Subsystem for Linux, open that folder in the Linux terminal and run these commands.
+
+```bash
+openssl x509 -in ota-release.x509.pem -noout -fingerprint -sha256
+mkdir -p ota-verifier
+tar -xzf ota-verifier-linux-x86_64.tar.gz -C ota-verifier
+PATH="$PWD/ota-verifier/bin:$PATH" check_ota_package_signature \
+  ota-release.x509.pem lineage-alphaplus_lao_com-1795533156.zip
+```
+
+Compare the certificate fingerprint above and look for **Whole package signature VERIFIED** and **Payload signatures VERIFIED**. If the verifier reports a failure, stop before formatting or accepting a recovery warning. [Recovery troubleshooting](RECOVERY.md)

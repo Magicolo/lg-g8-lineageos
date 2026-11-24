@@ -1,14 +1,19 @@
 # LineageOS 24.0 for the LG G8 ThinQ
 
-An unofficial Android 17 port for the Canadian **LM-G820UM2** (`alphaplus`) with LG Android 12 **40b** firmware. The repository pins the LineageOS, AOSP and LG dependencies and selects four public forks for the reviewed changes. Other G8 variants, firmware versions and carriers need their own validation.
+An unofficial Android 17 ROM for the Canadian **LG G8 ThinQ LM-G820UM2** with LG Android 12 **G820UM40b** firmware.
 
-The public source covers the camera and flashlight, call microphone routing, kernel configuration, NFC driver selection and ARM64 page-table isolation. Our working VoLTE build also uses a separate LG IMS adaptation. The default manifest gives developers the open source baseline. The final release also contains reviewed IMS bridge source, integration templates and an opt-in device manifest. The [IMS engineering notes](docs/IMS.md) describe the implementation and its dependencies.
+## Install or update
 
-## Installation and recovery
+1. Open the [beginner installation guide](docs/INSTALL.md) and choose the route that matches your phone.
+2. Get the ROM ZIP, its checksum list, and optional Google Apps from the [v1.1.0 release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0). The ROM is one ZIP.
+3. If you run into a problem, see [recovery troubleshooting](docs/RECOVERY.md). The same release includes stock firmware and tools for recovery or rebuilding.
 
-Open [Start here](docs/START-HERE.md) for the illustrated overview. Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing LineageOS, or same-key update path. It includes illustrated recovery menus, download verification and stop points. See [recovery troubleshooting](docs/RECOVERY.md) for common failures. Download the complete **v1.1.0** kit from GitHub Releases before flashing.
+The project includes camera, flashlight, microphone, NFC, and VoLTE fixes. Other hardware variants and firmware versions need their own validation.
 
-## Developer documentation
+<details>
+<summary>Developer documentation</summary>
+
+The [IMS engineering notes](docs/IMS.md) cover the device integration and its dependencies. The tagged manifest pins the LineageOS, AOSP, and LG sources and selects the four project forks.
 
 | Start here | What it contains |
 | --- | --- |
@@ -24,7 +29,7 @@ Open [Start here](docs/START-HERE.md) for the illustrated overview. Use the [ins
 | [Fix the Trust signing warning](docs/SIGNING.md) | Verify release keys and migrate an installed test-key build |
 | [Read the full ROM distribution audit](docs/RELEASE-AUDIT.md) | Signed candidate, license and notice evidence, and remaining release gates |
 
-See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for development artifacts and checksums. The release guide lists the signed ROM, recovery, optional add-ons and checksum files. This is a release of this unofficial device port. Open issues against this repository with the exact build, model, firmware, a minimal reproduction and redacted diagnostics.
+</details>
 
 Original material in this repository is licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for scope. Upstream components and redistributed artifacts retain their own licenses. [LineageOS upstream](https://github.com/LineageOS/android/tree/lineage-24.0) · [LG community device tree](https://github.com/lge-qcom-dev/android_device_lge_alphaplus)
 
