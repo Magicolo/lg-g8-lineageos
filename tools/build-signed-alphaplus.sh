@@ -24,7 +24,7 @@ export BUILD_DATETIME="${BUILD_DATETIME:-$(date +%s)}"
 export BUILD_NUMBER="$BUILD_DATETIME"
 source build/envsetup.sh
 lunch lineage_alphaplus-cp2a-userdebug
-m -j"$jobs" target-files-package check_ota_package_signature
+m -j"$jobs" target-files-package otatools check_ota_package_signature
 product=out/target/product/alphaplus
 target="$product/obj/PACKAGING/target_files_intermediates/lineage_alphaplus-target_files"
 host="$PWD/out/host/linux-x86"

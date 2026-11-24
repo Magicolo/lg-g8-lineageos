@@ -26,11 +26,11 @@ tree="$HOME/android-g8"
 kit="/path/to/private-install-kit"
 keys="/path/to/private-release-keys"
 
-git clone --branch v1.0.1 https://github.com/Magicolo/lg-g8-lineageos.git "$guide"
+git clone --branch v1.0.2 https://github.com/Magicolo/lg-g8-lineageos.git "$guide"
 mkdir -p "$tree"
 cd "$tree"
 repo init -u https://github.com/Magicolo/lg-g8-lineageos.git \
-    -b refs/tags/v1.0.1 -m manifest.xml --git-lfs --no-clone-bundle
+    -b refs/tags/v1.0.2 -m manifest.xml --git-lfs --no-clone-bundle
 mkdir -p .repo/local_manifests
 cp "$guide/ims/local-manifest.xml" .repo/local_manifests/
 repo sync -c -j8 --no-tags
