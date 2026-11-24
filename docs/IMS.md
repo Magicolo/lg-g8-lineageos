@@ -48,3 +48,25 @@ The private upgrade kept CarrierConfig's version code at 3 for compatibility wit
 ## Final source and integration
 
 The [IMS source folder](../ims/README.md) contains the reviewed Java and native compatibility code, build templates and opt-in device manifest. The ordinary public manifest remains the default.
+
+### Reproduce the stock media library adaptation
+
+The normal build uses the exact bytes in the IMS archive. When changing the media shim, independently reproduce that input from the **Canadian 40b** `/system_ext/lib64/libimsmmpf.lge.so`. Obtain it from a verified 40b firmware extraction or with `adb pull /system_ext/lib64/libimsmmpf.lge.so` while running matching stock. Verify the saved file against the script's input hash before modifying it.
+
+Use the two pinned PatchELF executables and LLVM from the Android checkout. PatchELF 0.17.2 and 0.18.0 arrange padding differently, so both tool versions are part of this exact reproduction.
+
+```bash
+PATCHELF_0_17_2="$tree/prebuilts/extract-tools/linux-x86/bin/patchelf-0_17_2" \
+PATCHELF="$tree/prebuilts/extract-tools/linux-x86/bin/patchelf-0_18" \
+LLVM_READELF="$tree/prebuilts/clang/host/linux-x86/clang-r596125/bin/llvm-readelf" \
+  bash "$guide/tools/patch-40b-ims-media.sh" \
+  ./stock-libimsmmpf.lge.so ./rebuilt-libimsmmpf.lge.so
+```
+
+The first pass adds the IMS shim dependency. The second adds `libaudiobase.so` and redirects the four graphics imports in place. Each stage checks the exact binary hash. The relocation listing must match after substituting the four symbol names. The resulting SHA-256 is `588ca47049ab44df484867699529231b9d0fef83320aa4b3337ee2c04e4a3dfd`. This recipe applies to that exact LG input. A new vendor image needs a fresh symbol table and relocation review.
+
+### Inspect or port the IMS APK
+
+The released archive supplies the firmware-derived legacy APK. It is built as a privileged system package and signed with the platform family. OEM Java and modem components are proprietary. The maintained Java/C++ bridge, profile, device integration and binary adaptation are the places to start a port.
+
+To inspect the boundary, locate `vendor/lge/alphaplus-ims/Ims6.apk` after staging and inspect its DEX references to `com.lge.ims.compat` and `com.android.ims.LGImsFeature`. Use JADX for reading and smali/baksmali when exact method descriptors or assembly matter. Match the descriptors in the bridge and validate that the startup invocation runs after the stock operator profile update and before IMS native initialization. Keep the runtime network and ISIM adapters in the source bridge. If you change the APK, retain its non-DEX assets and explicit package declarations, rebuild it through the Android system signing flow, and exercise first boot and same-key upgrade. Publish the replacement hash and package revision together with the paired bridge changes. [JADX](https://github.com/skylot/jadx) · [smali](https://github.com/google/smali)

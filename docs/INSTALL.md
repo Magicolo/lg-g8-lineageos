@@ -119,12 +119,7 @@ First boot can take several minutes. Once the welcome screen appears, complete A
 
 ## A. Start from LG stock Android
 
-Stock preparation is an advanced path. The [support downloads](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) include matching stock 40b, Windows tools and `boot.img` for the exact build.
-
-1. Boot the matching Canadian 40b stock firmware at least once. Confirm the model, SIM, calls, data, camera and USB. Preserve a model-specific rollback route.
-2. If the bootloader is locked or you cannot establish its state, stop here. A fresh unlock from locked stock was not validated. The [upstream G8 guide](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/) documents recovery prerequisites for an already prepared phone.
-3. Use the release's matching `boot.img` only if you meet the upstream rooted-recovery prerequisites and have a verified device-specific recovery procedure. Use the [model-specific A/B firmware instructions](https://lineageos.github.io/lineage_wiki/devices/alphaplus/install/variant1/#ensuring-all-firmware-partitions-are-consistent) when preparing both slots. If any stock tool or recovery step fails, pause and use [Troubleshooting](RECOVERY.md).
-4. Once your exact model, 40b firmware, and working Lineage Recovery are confirmed, follow [the clean install](#clean-install-in-lineage-recovery). With working recovery, the full OTA writes the necessary partitions.
+Start with [the stock preparation guide](STOCK.md). It shows how to reassemble the matching Canadian 40b firmware, set up LGUP, restore stock, and check unlock, root and recovery from Windows. **A factory-locked phone has no verified unlock path in this project.** After confirming 40b and working Lineage Recovery, follow [the clean install](#clean-install-in-lineage-recovery).
 
 ## Verify the ROM signer when changing builds
 

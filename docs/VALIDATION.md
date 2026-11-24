@@ -71,3 +71,16 @@ The [battery collector](../tools/Measure-G8Battery.ps1) accepts explicit ADB, a 
 ## v1.1.0 release validation
 
 Build `1795533156` passed full OTA and A/B payload signature verification, VINTF, embedded platform signatures, stock target and partition size checks, and the optional Google Apps sizing check. The effective kernel identity uses generic labels. Boot, DTBO and vbmeta matched the signed payload bytes. The previous build `1795454921` was tested on a Canadian G8. The rebuilt package was verified offline.
+
+### Independent rebuild checks
+
+| Check | Result |
+| --- | --- |
+| Initialize the release tag, apply the IMS overlay, and resolve Android Repo projects | 1,246 source projects resolved. |
+| Fresh public sync of all four component forks, both LG vendor repositories, CarrierConfig, IMS framework, and both WebView prebuilts | Passed. Both WebView APKs passed Git LFS and ZIP checks. |
+| Download the OTA, certificate, verifier, Windows tools and IMS archive from the release | Checked the downloaded files against the published hashes. The ROM and A/B payload signatures verified using the released verifier. |
+| Apply the IMS archive in the fresh selected-project checkout | Staged 59 files. The second pass found no missing inputs. A deliberate text edit required the developer option, and a deliberate binary edit was rejected with that option enabled. |
+| Reproduce the native IMS media library from the stock 40b input | The output matched the released IMS archive byte for byte. |
+| Generate a separate signing family from real target-files and sign an OTA | Generated 38 non-presigned APEX key pairs. The resulting OTA passed both signature checks and the three extracted boot-chain images matched the payload. This used the previously compiled unsigned Android baseline. |
+| Sync and compile all projects from a blank build environment | Pending. |
+| Factory-locked Canadian 40b to the exact released build | Pending. The tested clean migration used working Lineage Recovery and an earlier build in the same signing family. |

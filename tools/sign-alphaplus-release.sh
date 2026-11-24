@@ -30,30 +30,8 @@ for name in testkey platform shared media networkstack sdk_sandbox bluetooth nfc
     fi
 done
 
-apex_names=$(python3 - "$source_zip" <<'PY'
-import re
-import shlex
-import sys
-from zipfile import ZipFile
-
-with ZipFile(sys.argv[1]) as source:
-    metadata = source.read("META/apexkeys.txt").decode().splitlines()
-for line in metadata:
-    fields = dict(field.split("=", 1) for field in shlex.split(line) if "=" in field)
-    if not fields:
-        continue
-    name = fields["name"]
-    if not re.fullmatch(r"[A-Za-z0-9_.]+\.apex", name):
-        sys.exit(f"Unexpected APEX name: {name}")
-    payload = fields["private_key"] == "PRESIGNED"
-    container = fields["container_private_key"] == "PRESIGNED"
-    if payload != container:
-        sys.exit(f"Unexpected mixed signing of {name}")
-    if not payload:
-        print(name)
-PY
-)
-[[ -n "$apex_names" ]]
+tools=$(cd "$(dirname "$0")" && pwd)
+apex_names=$(python3 "$tools/signing-inputs.py" "$source_zip")
 args=(-d "$keys" -o -k "$certs/nfc=$keys/nfc"
       --avb_vbmeta_key "$keys/vbmeta.pem" --avb_vbmeta_algorithm SHA256_RSA4096)
 while IFS= read -r name; do

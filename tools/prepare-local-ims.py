@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage the verified private IMS inputs in the pinned public checkout."""
+"""Stage the verified IMS inputs in the pinned public checkout."""
 
 import argparse
 import hashlib
@@ -7,20 +7,20 @@ from pathlib import Path, PurePosixPath
 import subprocess
 import sys
 import tarfile
+from xml.etree import ElementTree
 
 
 INPUT_SHA256 = "b8dc7e0e6097a66f0eba895c0d9e67c58953e66463e2d1ff6c76670a1b5e4094"
-PINS = {
-    "device/lge/alphaplus": "55d678abd3ef1ef88c1713604fcd670990250930",
-    "device/lge/sm8150-common": "ced431293e3f1766a935e674b7cab20cbcbc62ee",
-    "kernel/lge/sm8150": "8817f5e6c9372e59e0c10a8dbe96517f64e927a8",
-    "frameworks/av": "d87bc7d158853a78da22047dd2648559a1d99f1b",
-    "packages/apps/CarrierConfig": "c9f82c3de8293731d4230758dc258916c12335a6",
-}
+PIN_PATHS = (
+    "device/lge/alphaplus", "device/lge/sm8150-common", "kernel/lge/sm8150",
+    "frameworks/av", "packages/apps/CarrierConfig", "frameworks/opt/net/ims",
+)
+SOURCE_SUFFIXES = {".aidl", ".bp", ".cpp", ".java", ".properties", ".rc", ".xml"}
+GUIDE = Path(__file__).resolve().parents[1]
 TOP_LEVEL = ("device/lge/alphaplus/ims/", "vendor/lge/alphaplus-ims/")
 PROFILE = "device/lge/alphaplus/ims/config/compat-profile.properties"
 LG_IMS_FEATURE = "frameworks/opt/net/ims/src/java/com/android/ims/LGImsFeature.java"
-PATCH = Path(__file__).resolve().parents[1] / "ims/carrierconfig-upgrade-only.patch"
+PATCH = GUIDE / "ims/carrierconfig-upgrade-only.patch"
 
 
 def git(root, *args):
@@ -38,8 +38,17 @@ def effective_properties(data):
             if line.strip() and not line.lstrip().startswith(b"#")]
 
 
-def stage(tree, archive, upgrade, verify_only):
-    for project, revision in PINS.items():
+def pins():
+    projects = ElementTree.parse(GUIDE / "manifest.xml").getroot().findall("project")
+    overlays = ElementTree.parse(GUIDE / "ims/local-manifest.xml").getroot().findall("extend-project")
+    by_path = {project.get("path") or project.attrib["name"]: project.attrib["revision"]
+               for project in projects + overlays}
+    for project in PIN_PATHS:
+        yield project, by_path[project]
+
+
+def stage(tree, archive, upgrade, verify_only, source_edits):
+    for project, revision in pins():
         result = git(tree / project, "rev-parse", "HEAD")
         if result.returncode or result.stdout.strip() != revision:
             raise ValueError(f"{project}: checkout must be at {revision}")
@@ -73,6 +82,9 @@ def stage(tree, archive, upgrade, verify_only):
                 if name == PROFILE and effective_properties(current) == effective_properties(data):
                     continue
                 if current != data:
+                    if source_edits and destination.suffix in SOURCE_SUFFIXES:
+                        print(f"Using local source edit: {name}")
+                        continue
                     raise ValueError(f"Existing file differs from checkpoint: {name}")
             else:
                 pending.append((destination, data, member.mode & 0o777))
@@ -95,16 +107,19 @@ def stage(tree, archive, upgrade, verify_only):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("checkout", type=Path, help="root of the pinned Android checkout")
-    parser.add_argument("input_archive", type=Path, help="private lg-ims-working-inputs.tar.gz")
+    parser.add_argument("input_archive", type=Path, help="verified lg-ims-working-inputs.tar.gz")
     parser.add_argument("--upgrade-compat", action="store_true",
                         help="carry the versionCode used on the tested signed release")
     parser.add_argument("--verify-only", action="store_true")
+    parser.add_argument("--source-edits", action="store_true",
+                        help="allow local edits to the staged text sources, preserving binary checks")
     args = parser.parse_args()
-    stage(args.checkout.resolve(), args.input_archive, args.upgrade_compat, args.verify_only)
+    stage(args.checkout.resolve(), args.input_archive, args.upgrade_compat, args.verify_only,
+          args.source_edits)
 
 
 if __name__ == "__main__":
     try:
         main()
-    except (OSError, ValueError, tarfile.TarError) as error:
+    except (OSError, ValueError, KeyError, ElementTree.ParseError, tarfile.TarError) as error:
         sys.exit(f"IMS preparation stopped: {error}")

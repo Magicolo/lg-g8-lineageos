@@ -2,6 +2,8 @@
 
 The project manifest pins 1,246 Git projects and four component forks. Use a dedicated Linux workspace on a case-sensitive filesystem. The target is ARM64, Android 17 SDK 37, LineageOS 24.0. The tested development handset is the Canadian LM-G820UM2 on LG 40b. Its internal build target is `alphaplus`. The Canadian recovery target used by the full development OTA was `alphaplus_lao_com`.
 
+For the complete ROM with IMS, start with [Rebuild](REBUILD.md). This preview deliberately omits the local IMS input overlay and uses the original test-key build flow.
+
 ## 1. Sync the pinned source
 
 Install Git, Git LFS, Android's `repo` launcher and the standard LineageOS build dependencies. Budget several hundred GiB for the checkout, object store and build output. Keep build output distinct from the source working trees. One Android 17 Soong graph pass exceeded 52 GiB of resident memory on the development host before swap was added. Lowering Ninja's job count can help later compilation but cannot cap every Soong process.

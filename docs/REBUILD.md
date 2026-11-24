@@ -1,62 +1,124 @@
-# Rebuild or recover a complete Canadian LG G8 kit
+# Rebuild the full LG G8 ROM from scratch
 
-The GitHub tag pins the source projects and their revisions. The [v1.1.0 release](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) supplies the signed OTA, exact IMS input archive, recovery files and signed target-files. Keep them on a drive outside either workspace. A new build uses a new timestamp; the released OTA is the byte-for-byte copy of build 1795533156.
+The [v1.1.0 release][release] contains the install files and the exact IMS input archive. The v1.1.0 Git tag pins the Android source. The current guide contains the rebuild and signing tools. You can recreate that source baseline with a new build timestamp, install the existing signed OTA, or develop the next build. The release's SHA-256 identifies the original binary. A rebuild has its own hashes.
 
-## What to save before deleting a build tree
+## What you need
 
-| Item | Needed for |
-| --- | --- |
-| Complete signed OTA, public certificate and SHA256SUMS | Install and verify the existing build. Existing Lineage Recovery can sideload the OTA without independently flashing raw images. |
-| Matching boot, DTBO and vbmeta plus signed target-files | Recovery and image inspection. Use the OTA and target-files together. |
-| Local `lg-ims-working-inputs.tar.gz` archive | Complete IMS build. The archive SHA-256 is `b8dc7e0e6097a66f0eba895c0d9e67c58953e66463e2d1ff6c76670a1b5e4094`. It contains the exact locally prepared binary and legacy ABI pair. |
-| Dedicated APK, APEX and AVB signing keys | A compatible update for phones already signed by this project. Keep them in separate private storage. Use fresh keys for a separate signing family. |
-| Source tag and this guide | Recover all source projects from GitHub and the other pinned upstream servers. |
+- An x86-64 Linux machine and a case-sensitive filesystem. The development machine ran Ubuntu 26.04 with about 61 GiB RAM and 39 GiB swap. A Soong phase reached about 52 GiB resident memory. Plan for at least 400 GB free, and preferably 500 GB to leave room for signing, test artifacts and Git storage. Use an SSD. A second checkout requires additional space. [AOSP host requirements](https://source.android.com/docs/setup/start/requirements)
+- Internet access to GitHub and the AOSP Git servers. The [pinned manifest](../manifest.xml) fetches the four component forks and the rest of the Android source from their original hosts. It also pins both LG vendor repositories. The release archive supplies the extra LG IMS inputs.
+- For a clean install on a development handset, generate your own keys below. To update a phone already running this project's signed ROM **with its apps and data**, restore the original private APK, APEX and AVB keyset from the maintainer's private escrow outside the checkout. A public certificate verifies the OTA. Only the original private keyset can sign a same-family update. [Signing and recovery](SIGNING.md)
+- To install prebuilt files or return a phone to stock, use [Install](INSTALL.md) and [Stock preparation](STOCK.md). A build machine is optional for either operation.
 
-Use the released IMS archive rather than starting from stock radio packages. It contains the paired package and bridge inputs for the neutralized build.
+## 1. Install host tools
 
-## Build from a new Linux checkout
-
-Use a case-sensitive Linux filesystem. The last build used Ubuntu 26.04 x86-64, about 61 GiB RAM and 39 GiB swap. Allow several hundred GiB for source and output plus extra space for target-files, signed images and temporary data. Install Git LFS, the Android `repo` launcher, Python 3.11 or later and the standard LineageOS build packages.
-
-Replace the example paths with your own. The install kit is a separate directory from the Android checkout.
+On Ubuntu, open Bash and run the following. Use the [AOSP Repo launcher instructions](https://source.android.com/docs/setup/start/requirements#install-repo) if the `repo` package is unavailable or the launcher version is below 2.4. Android's prebuilt JDK and toolchain come from the pinned checkout. The verification scripts need Python 3.11 or newer.
 
 ```bash
-guide="$HOME/lg-g8-guide"
-tree="$HOME/android-g8"
-kit="/path/to/downloaded-v1.1.0-assets"
-keys="/path/to/private-release-keys"
+sudo apt-get update
+sudo apt-get install repo git git-lfs gnupg flex bison build-essential zip curl \
+  zlib1g-dev libc6-dev-i386 x11proto-core-dev libx11-dev lib32z1-dev \
+  libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig rsync python3 \
+  libncurses-dev lz4 bc openssl e2fsprogs android-sdk-libsparse-utils
+git lfs install --skip-repo
+repo version
+python3 --version
+```
 
-git clone --branch v1.1.0 https://github.com/Magicolo/lg-g8-lineageos.git "$guide"
-mkdir -p "$tree"
+If Repo asks for Git author details, use a Git identity you are comfortable exposing in public commits. On WSL, put source and output in the Linux filesystem and give the VM adequate RAM and swap. Windows can perform the phone installation separately.
+
+## 2. Fetch and verify the baseline
+
+Run in Bash. Choose a new parent directory on a disk with enough free space. Keep your guide and downloads outside the Android tree. These commands fix the release tag. Later updates use [the candidate workflow](MAINTENANCE.md).
+
+```bash
+set -e
+base="$HOME/g8-development"
+guide="$base/guide"
+tree="$base/android"
+kit="$base/assets"
+mkdir -p "$base" "$tree" "$kit"
+git clone https://github.com/Magicolo/lg-g8-lineageos.git "$guide"
+
+# Check that the current scripts target the sources shipped in v1.1.0.
+git -C "$guide" diff --exit-code v1.1.0 HEAD -- manifest.xml ims/local-manifest.xml
+release=https://github.com/Magicolo/lg-g8-lineageos/releases/download/v1.1.0
+curl --fail --location --retry 3 \
+  --output "$kit/lg-ims-working-inputs.tar.gz" "$release/lg-ims-working-inputs.tar.gz"
+(cd "$kit" && sha256sum -c - <<'SUM'
+b8dc7e0e6097a66f0eba895c0d9e67c58953e66463e2d1ff6c76670a1b5e4094  lg-ims-working-inputs.tar.gz
+SUM
+)
+
 cd "$tree"
 repo init -u https://github.com/Magicolo/lg-g8-lineageos.git \
-    -b refs/tags/v1.1.0 -m manifest.xml --git-lfs --no-clone-bundle
+  -b refs/tags/v1.1.0 -m manifest.xml --git-lfs --no-clone-bundle --partial-clone
 mkdir -p .repo/local_manifests
 cp "$guide/ims/local-manifest.xml" .repo/local_manifests/
-repo sync -c -j8 --no-tags
-repo manifest -r -o resolved-local.xml
+repo sync -c -j8 --no-tags --fail-fast
+repo manifest -r -o "$base/resolved.xml"
+
+for arch in arm arm64; do
+  webview="external/chromium-webview/prebuilt/$arch"
+  git -C "$webview" lfs pull --include webview.apk
+  git -C "$webview" lfs fsck --objects
+  unzip -tq "$webview/webview.apk"
+done
+
 inputs="$kit/lg-ims-working-inputs.tar.gz"
 python3 "$guide/tools/prepare-local-ims.py" "$tree" "$inputs" --upgrade-compat
-bash "$guide/tools/build-signed-alphaplus.sh" "$tree" "$inputs" "$keys" "$HOME/g8-signed-output" 8
+python3 "$guide/tools/prepare-local-ims.py" "$tree" "$inputs" --upgrade-compat --verify-only
 ```
 
-If WebView still contains an LFS pointer, see [build troubleshooting](BUILD.md). The source preparation checks the component revisions and input archive hash, and rejects unrelated edits to the input paths. The migration flag retains the CarrierConfig version used by the released signing family. The build script uses generic host identifiers and pins the Canadian SDK 37 target. It saves the signed OTA, target-files, public certificate, boot-chain images and checksums. Use the [preflight](SIGNING.md#build-and-verify-a-release-key-package) and [hardware matrix](VALIDATION.md) before deploying a rebuild.
+If the network failed, run the same `repo sync` command again inside `$tree` and keep the fetched objects. A failed LFS pull, a pointer in place of an APK, a missing pinned revision, or a failed IMS check needs to be fixed before compiling. See [Build troubleshooting](BUILD.md). The local manifest is required for the full build. The plain manifest is a preview without the local IMS integration.
 
-The Java bridge and the matching APK use the same carrier-neutral ABI names. Use the archive's complete pair for a matching rebuild. For a port, use the [IMS design](IMS.md) and match the bridge and APK together. Numeric profiles are configuration inputs.
+The IMS input check verifies the whole archive and the six relevant checkout revisions. It installs only the expected files, reuses matching tracked files, and applies the CarrierConfig upgrade patch. Keep the APK and the versioned Java and native bindings together. [IMS layout and ABI](IMS.md)
 
-## Check an existing install kit
+## 3. Build a signed OTA
 
-From the installation downloads directory on Linux run `sha256sum -c SHA256SUMS --ignore-missing`. On Windows compare `Get-FileHash -Algorithm SHA256` with the matching line. Verify the OTA with the pinned public certificate and the AOSP `check_ota_package_signature` from your build tools. A successful check covers the whole ZIP and its A/B payload.
-
-To re-export the exact boot-chain images into an empty directory, use the signed target-files archive that belongs with the OTA.
+Use **one** of the commands below. Fresh keys are for a separate signing family and a clean install. An existing keyset is for a compatible OTA. Put keys in a mode-0700 directory on a private Linux filesystem, outside the checkout. Run a new-key build once and back up the key directory. If signing stops after key generation succeeds, omit `--new-keys` when resuming to reuse those keys.
 
 ```bash
-mkdir recovered-images
-python3 "$guide/tools/extract-alphaplus-images.py" \
-    /path/to/lineage-alphaplus_lao_com-1795533156.zip \
-    /path/to/signed-target-files.zip recovered-images
+# First build for a separate installation or distribution channel.
+mkdir -m 700 -p "$HOME/.local/share/lg-g8"
+keys="$HOME/.local/share/lg-g8/keys"
+bash "$guide/tools/build-signed-alphaplus.sh" --new-keys \
+  "$tree" "$inputs" "$keys" "$base/signed-output" 8
+
+# Or build an update for the original signing family.
+keys=/absolute/path/to/restored-private-keys
+bash "$guide/tools/build-signed-alphaplus.sh" \
+  "$tree" "$inputs" "$keys" "$base/signed-output" 8
 ```
 
-Then follow [Start here](START-HERE.md), [installation](INSTALL.md) and [recovery](RECOVERY.md). Use the illustrated steps and stop if the phone reports a different model, an unexpected signer, or OPID Mismatched.
+The script compiles `lineage_alphaplus-cp2a-userdebug`, checks VINTF and notices, signs target-files, verifies both OTA signatures, and exports the boot-chain images after matching them to the OTA payload. Android build output is in `$tree/out`. Publication files appear in `$base/signed-output` after success. A failed build retains its scratch data and prints the path. Fix the error and rerun the command while keeping incremental output. For a new OTA the build timestamp and patch level must satisfy the installed build's upgrade rules. [Android OTA signing](https://source.android.com/docs/core/ota/sign_builds)
 
-[Android signing tools](https://source.android.com/docs/core/ota/sign_builds)
+The first signing run creates the common Android APK keys, a vbmeta key, and a container/payload key pair for every non-presigned APEX in the target. Keep the same key directory for updates. The signing step checks for missing keys, including keys for newly introduced APEXes. [Maintaining the signing family](MAINTENANCE.md#qualify-the-candidate)
+
+## 4. Verify before installing or publishing
+
+Run this preflight even if you plan to use the ROM without Google apps. It checks the optional add-on against the image layout. Verify the room for the add-on again when its build or the platform changes.
+
+```bash
+gapps="$kit/MindTheGapps-17.0.0-arm64-20261022_132445.zip"
+curl --fail --location --retry 3 --output "$gapps" "$release/$(basename "$gapps")"
+output="$base/signed-output"
+(cd "$output" && sha256sum -c SHA256SUMS)
+export PATH="$tree/out/host/linux-x86/bin:$tree/prebuilts/jdk/jdk21/linux-x86/bin:$PATH"
+python3 "$guide/tools/check-alphaplus-ota.py" \
+  --ota "$output/lineage_alphaplus-ota.zip" \
+  --target-files "$output/signed-target-files.zip" \
+  --gapps "$gapps" \
+  --ota-certificate "$output/ota-release.x509.pem" \
+  --platform-certificate "$output/platform-release.x509.pem" \
+  --require-release-keys --scratch-dir "$base"
+```
+
+Deploy to a spare first with the [validation matrix](VALIDATION.md). Keep its previous signed package and rollback paths until calls, upgrades and hardware pass. A new keyset requires a verified clean transition through recovery.
+
+## Restore or inspect the existing release
+
+For installation, use the exact hashes and the public OTA verifier in [Install](INSTALL.md). For developer archives or stock KDZ, download each numbered part from [the same release][release], plus `split-files.json` and `Join-ReleaseParts.ps1`. Follow [the asset reconstruction procedure](RELEASES.md). To re-export matching boot, DTBO and vbmeta, run `tools/extract-alphaplus-images.py OTA.zip signed-target-files.zip OUTPUT_DIRECTORY` with an empty output directory.
+
+Repository verification has exercised the manifest and selected source sync, the exact IMS setup and the release artifacts. The release compiled in the development checkout. See [validation status](VALIDATION.md) for the tests still owed on a clean environment and a factory-locked handset.
+
+[release]: https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0
