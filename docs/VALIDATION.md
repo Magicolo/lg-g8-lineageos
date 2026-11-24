@@ -77,6 +77,7 @@ Build `1795533156` passed full OTA and A/B payload signature verification, VINTF
 | Check | Result |
 | --- | --- |
 | Initialize the release tag, apply the IMS overlay, and resolve Android Repo projects | 1,246 source projects resolved. |
+| Compare the pinned sources with the original build tree | The other 1,242 project heads matched. The four fork pins incorporate the checked release changes. All ten locally modified tracked files matched the corresponding files in the fresh checkout after IMS preparation. |
 | Fresh public sync of all four component forks, both LG vendor repositories, CarrierConfig, IMS framework, and both WebView prebuilts | Passed. Both WebView APKs passed Git LFS and ZIP checks. |
 | Download the OTA, certificate, verifier, Windows tools and IMS archive from the release | Checked the downloaded files against the published hashes. The ROM and A/B payload signatures verified using the released verifier. |
 | Apply the IMS archive in the fresh selected-project checkout | Staged 59 files. The second pass found no missing inputs. A deliberate text edit required the developer option, and a deliberate binary edit was rejected with that option enabled. |
