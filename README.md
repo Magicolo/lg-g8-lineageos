@@ -12,6 +12,7 @@ Open [Start here](docs/START-HERE.md) for the illustrated overview. Use the [ins
 
 | Start here | What it contains |
 | --- | --- |
+| [Recover or rebuild a signed kit](docs/REBUILD.md) | Clean-checkout commands, local inputs, signing and image recovery |
 | [Build the source preview](docs/BUILD.md) | Standard `repo` commands, inputs, exact target, kernel targets and common build failures |
 | [Check device and firmware compatibility](docs/COMPATIBILITY.md) | Exact 40b stock input, userspace provenance, BPF, A/B limits and Google Apps |
 | [Understand the changes](docs/CHANGES.md) | Each public commit, root cause, implementation, and limits on reuse |

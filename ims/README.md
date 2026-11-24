@@ -1,6 +1,6 @@
 # LG IMS source and local inputs
 
-This folder contains the project's Java compatibility bridge, carrier profile test, native Android 12-to-17 wrappers and Soong, permission and init definitions. The [IMS guide](../docs/IMS.md) explains the carrier, subscription and modem checks.
+This folder contains the project's Java compatibility bridge, carrier profile test, native Android 12-to-17 wrappers and Soong, permission and init definitions. See [Rebuild](../docs/REBUILD.md) for the version-matched input archive and automated source preparation. The [IMS guide](../docs/IMS.md) explains the carrier, subscription and modem checks.
 
 1. Initialize the public checkout using the [build guide](../docs/BUILD.md).
 2. Copy `local-manifest.xml` into `.repo/local_manifests/` and run `repo sync -c device/lge/alphaplus device/lge/sm8150-common` to select the Canadian device and carrier changes.
