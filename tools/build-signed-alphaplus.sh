@@ -41,6 +41,8 @@ if [[ -d "$scratch/notices" ]]; then
 fi
 grep -Fx COMPATIBLE "$product/obj/PACKAGING/check_vintf_all_intermediates/check_vintf_compatible.log"
 bash "$tools/sign-alphaplus-release.sh" "$unsigned" "$keys" "$scratch/signed"
+python3 "$tools/normalize-target-paths.py" "$scratch/signed/signed-target-files.zip" "$tree" "$keys"
+(cd "$scratch/signed" && sha256sum lineage_alphaplus-ota.zip signed-target-files.zip ota-release.x509.pem > SHA256SUMS)
 python3 "$tools/check-target-notices.py" "$scratch/signed/signed-target-files.zip"
 python3 "$tools/extract-alphaplus-images.py" "$scratch/signed/lineage_alphaplus-ota.zip" "$scratch/signed/signed-target-files.zip" "$scratch/signed"
 mv -T "$scratch/signed" "$output"

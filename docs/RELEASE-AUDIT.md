@@ -52,3 +52,7 @@ The [repository license](../LICENSE) and [NOTICE file](../NOTICE) cover original
 ## Final build 1795454921
 
 The final build retains the pinned proprietary inputs from the qualification above. Its signed A/B payload matched the exported boot, DTBO and vbmeta images by size and SHA-256. The recovery kernel includes compiled touchscreen and proximity-controller firmware inputs. The staged AVB metadata also contains a build-host identifier. The exact flashable kit stays private. Published engineering files use the raw DTB and DTBO without that metadata, the documented open source, and the project public certificate.
+
+## v1.1.0 publication status
+
+The project owner confirmed legal review and authorized public distribution of the kit's third-party binaries. Version [v1.1.0](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) uses a rebuilt package with neutral Android and kernel build identities. Earlier holds in this audit describe the older private builds. Original vendor packages retain their applicable terms.

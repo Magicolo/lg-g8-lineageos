@@ -58,3 +58,11 @@ The full signed kit was preserved privately with the OTA, matching recovery boot
 A Canadian G8 clean-installed this build from an existing Lineage Recovery, with the separate Android 17 ARM64 Google Apps add-on. Android booted with release keys and enforcing SELinux. Retained logs showed VoLTE, and call records showed connections in both directions. Trust showed no public-keys warning and NFC initialized. A second Canadian G8 passed the same-key local OTA from 1795369605.
 
 The full OTA includes LG and Qualcomm binaries and inherited proprietary vendor packages. The recovery boot image embeds board firmware. Wrapped DTBO and vbmeta carry build-host metadata. See the [distribution audit](RELEASE-AUDIT.md) and the [illustrated starting point](START-HERE.md).
+
+## Complete install kit v1.1.0
+
+[GitHub release v1.1.0](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) contains the complete Canadian kit for build **1795533156**, including the signed OTA, matching recovery/DTBO/vbmeta, stock 40b, Windows USB tools, optional Google Apps, exact IMS build inputs and signed target-files. The latter two are useful to maintainers. Every provided file and split part has a SHA-256 entry.
+
+The public rebuild uses neutral Android and kernel build identities. The IMS Java bridge and the four call sites in the matching LG APK use carrier-neutral ABI names. The numeric profile, match rules and telephony behavior are unchanged. Conventional upstream stock packages retain their manufacturer data. The released ROM keeps the same project OTA, platform, APEX and AVB signing family as the previously tested build **1795454921**.
+
+Follow the [installation guide](INSTALL.md) for recovery and same-key update paths. The earlier build passed a clean install and ordinary incoming and outgoing calls on hardware. Review the validation information in the release notes for the rebuilt package.

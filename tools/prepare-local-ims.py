@@ -9,9 +9,9 @@ import sys
 import tarfile
 
 
-INPUT_SHA256 = "3cdbef87a780543c98ef7a38f84a1f86e7eb0b945b2db8c92982b1d45c9e1d1f"
+INPUT_SHA256 = "b8dc7e0e6097a66f0eba895c0d9e67c58953e66463e2d1ff6c76670a1b5e4094"
 PINS = {
-    "device/lge/alphaplus": "8365f1ed4381bad15e1f85029f80045c27a5ca1c",
+    "device/lge/alphaplus": "67824eed1690c95f23e34fb839716b131483d336",
     "device/lge/sm8150-common": "ced431293e3f1766a935e674b7cab20cbcbc62ee",
     "kernel/lge/sm8150": "8817f5e6c9372e59e0c10a8dbe96517f64e927a8",
     "frameworks/av": "d87bc7d158853a78da22047dd2648559a1d99f1b",

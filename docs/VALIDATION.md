@@ -67,3 +67,7 @@ The Linux kernel thermal zones and the LG/Qualcomm `thermal-engine` daemon were 
 The CPU-idle boot flag experiment was reverted after it failed to improve the observed plugged-in little-core residency. To justify revisiting it, use repeated unplugged baselines with the same signal, SIM, initial charge, screen behavior, app load and test interval. Let indexing settle, disable USB Stay Awake for the measurement, and collect time on battery, screen time, charge-counter delta, temperature and CPU idle residency. Six hours is a useful initial comparison window. Do not simulate an unplugged measurement by changing BatteryService state.
 
 The [battery collector](../tools/Measure-G8Battery.ps1) accepts explicit ADB, a phase label and an optional `-Serial` when more than one handset is connected. Compare results with a second run per build. Validate alarm wake, first incoming call after idle, notifications, Wi-Fi and Bluetooth resume and charging reconnect before accepting changes that affect wake behavior.
+
+## v1.1.0 release candidate
+
+The release candidate replaces the build account, host and project-specific IMS names. Verify the full OTA and A/B payload signatures, VINTF, stock target and certificates, effective kernel identity, and matching boot-chain hashes. A new validation run on a Canadian G8 remains separate from the earlier hardware results for build 1795454921.

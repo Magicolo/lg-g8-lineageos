@@ -1,4 +1,4 @@
-# LineageOS 24.0 source release for the LG G8 ThinQ
+# LineageOS 24.0 for the LG G8 ThinQ
 
 An unofficial Android 17 port for the Canadian **LM-G820UM2** (`alphaplus`) with LG Android 12 **40b** firmware. The repository pins the LineageOS, AOSP and LG dependencies and selects four public forks for the reviewed changes. Other G8 variants, firmware versions and carriers need their own validation.
 
@@ -6,7 +6,7 @@ The public source covers the camera and flashlight, call microphone routing, ker
 
 ## Installation and recovery
 
-Open [Start here](docs/START-HERE.md) for the illustrated overview. Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing LineageOS, or same-key update path. It includes illustrated recovery menus, download verification and stop points. See [recovery troubleshooting](docs/RECOVERY.md) for common failures. The public downloads are engineering artifacts. A complete, compatible install kit is required before flashing.
+Open [Start here](docs/START-HERE.md) for the illustrated overview. Use the [installation guide](docs/INSTALL.md) to pick the stock LG, existing LineageOS, or same-key update path. It includes illustrated recovery menus, download verification and stop points. See [recovery troubleshooting](docs/RECOVERY.md) for common failures. Download the complete **v1.1.0** kit from GitHub Releases before flashing.
 
 ## Developer documentation
 
@@ -24,7 +24,7 @@ Open [Start here](docs/START-HERE.md) for the illustrated overview. Use the [ins
 | [Fix the Trust signing warning](docs/SIGNING.md) | Verify release keys and migrate an installed test-key build |
 | [Read the full ROM distribution audit](docs/RELEASE-AUDIT.md) | Signed candidate, license and notice evidence, and remaining release gates |
 
-See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for development artifacts and checksums. Installing requires the complete Canadian kit described in the release guide. Open issues against this repository with the exact build, model, firmware, a minimal reproduction and redacted diagnostics.
+See [GitHub Releases](https://github.com/Magicolo/lg-g8-lineageos/releases) for development artifacts and checksums. The release guide lists the signed ROM, recovery, optional add-ons and checksum files. This is a release of this unofficial device port. Open issues against this repository with the exact build, model, firmware, a minimal reproduction and redacted diagnostics.
 
 Original material in this repository is licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for scope. Upstream components and redistributed artifacts retain their own licenses. [LineageOS upstream](https://github.com/LineageOS/android/tree/lineage-24.0) · [LG community device tree](https://github.com/lge-qcom-dev/android_device_lge_alphaplus)
 

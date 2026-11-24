@@ -1,10 +1,10 @@
 # Start here
 
-This project covers the **Canadian LG G8 ThinQ LM-G820UM2** with LG Android 12 **40b** firmware. Its Android device ID is **alphaplus_lao_com**. The final public release contains source and engineering files. Installing Android requires a complete matching kit.
+This project covers the **Canadian LG G8 ThinQ LM-G820UM2** with LG Android 12 **40b** firmware. Its Android device ID is **alphaplus_lao_com**. Download the complete [v1.1.0 installation kit](https://github.com/Magicolo/lg-g8-lineageos/releases/tag/v1.1.0) for this exact variant.
 
 | What you want to do | Where to go |
 | --- | --- |
-| Find the release assets and checksums | [Release guide](RELEASES.md#final-source-release) |
+| Find the release assets and checksums | [Release guide](RELEASES.md#complete-install-kit-v110) |
 | Install or update with a complete matching kit | [Installation guide](INSTALL.md) |
 | Build the public source | [Build guide](BUILD.md) |
 | Understand the call fixes | [IMS engineering guide](IMS.md) and [local inputs](../ims/README.md) |
